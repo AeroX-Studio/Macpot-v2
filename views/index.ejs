@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="description" content="Discover Apple devices and everyday essentials at MacPoint Bangladesh." />
+    <title><%= title %></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/styles.css" />
+    <script src="/js/storefront.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <div class="announcement-bar">
+      <span>Thoughtful technology. Personal service.</span>
+      <a href="#benefits">Discover the MacPoint difference <span aria-hidden="true">→</span></a>
+    </div>
+
+    <header class="site-header">
+      <div class="header-main page-width">
+        <button class="icon-button menu-toggle" id="menu-toggle" aria-label="Open navigation" aria-expanded="false" aria-controls="primary-nav">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+        </button>
+        <a class="brand" href="#top" aria-label="MacPoint home">
+          <span class="brand-mark" aria-hidden="true">M<span>.</span></span>
+          <span class="brand-word">MACPOINT</span>
+        </a>
+
+        <form class="search-form" id="search-form" role="search">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8" /><path d="m16 16 4.2 4.2" /></svg>
+          <label class="sr-only" for="site-search">Search products</label>
+          <input id="site-search" type="search" placeholder="Search products" autocomplete="off" />
+          <kbd>⌘ K</kbd>
+        </form>
+
+        <div class="header-actions">
+          <button class="icon-button account-link" id="account-trigger" aria-label="Account">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5" /><path d="M5 20c.7-3.5 3.2-5.5 7-5.5s6.3 2 7 5.5" /></svg>
+          </button>
+          <button class="icon-button wishlist-trigger" id="wishlist-trigger" aria-label="Wishlist, 0 items" aria-pressed="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.4 8.7c0 4.1-8.4 10-8.4 10s-8.4-5.9-8.4-10A4.2 4.2 0 0 1 12 6.4a4.2 4.2 0 0 1 8.4 2.3Z" /></svg>
+            <span class="count-badge" id="wishlist-count">0</span>
+          </button>
+          <button class="icon-button cart-trigger" id="cart-trigger" aria-label="Shopping bag, 0 items" aria-controls="cart-drawer" aria-expanded="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l1 12H4L5 8Z" /><path d="M9 9V6a3 3 0 0 1 6 0v3" /></svg>
+            <span class="count-badge" id="cart-count">0</span>
+          </button>
+        </div>
+      </div>
+
+      <nav class="primary-nav" id="primary-nav" aria-label="Main navigation">
+        <div class="page-width nav-inner">
+          <a href="#products" data-category-link="All">All products</a>
+          <a href="#categories" data-category-link="Mac">Mac</a>
+          <a href="#categories" data-category-link="iPhone">iPhone</a>
+          <a href="#categories" data-category-link="iPad">iPad</a>
+          <a href="#categories" data-category-link="Audio">Audio</a>
+          <a href="#categories" data-category-link="Watch">Apple Watch</a>
+          <a href="#categories" data-category-link="Accessories">Accessories</a>
+          <a href="#footer">Support</a>
+        </div>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="hero page-width" id="top" aria-label="Featured collection">
+        <div class="hero-copy reveal">
+          <p class="eyebrow" id="hero-eyebrow">MADE FOR WHAT’S NEXT</p>
+          <h1 id="hero-title">A little more<br />wonder in every day.</h1>
+          <p class="hero-description" id="hero-description">Meet the devices that make your big ideas, daily rituals, and everything in between feel effortless.</p>
+          <div class="hero-actions">
+            <a class="button button-dark" href="#products" id="hero-cta">Explore the collection <span aria-hidden="true">→</span></a>
+            <a class="text-link" href="#categories">Find your device <span aria-hidden="true">↗</span></a>
+          </div>
+          <div class="slider-controls" aria-label="Featured slides">
+            <button class="slider-arrow" id="hero-prev" aria-label="Previous slide"><span aria-hidden="true">←</span></button>
+            <div class="slider-dots" id="slider-dots"></div>
+            <button class="slider-arrow" id="hero-next" aria-label="Next slide"><span aria-hidden="true">→</span></button>
+            <span class="slide-number" id="slide-number">01 / 03</span>
+          </div>
+        </div>
+        <div class="hero-visual reveal" id="hero-visual">
+          <div class="hero-art-wrap">
+            <img id="hero-image" src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=1400&q=88" alt="A slim silver laptop on a bright desk" />
+          </div>
+          <div class="hero-product-note"><span class="note-line"></span><span id="hero-note">MacBook Air · Built for the long run</span></div>
+          <div class="hero-index" aria-hidden="true">01</div>
+        </div>
+      </section>
+
+      <section class="category-section section-pad page-width" id="categories">
+        <div class="section-heading reveal">
+          <div><p class="eyebrow">A WORLD OF POSSIBILITY</p><h2>What are you looking for?</h2></div>
+          <a class="text-link" href="#products" data-category-link="All">View all products <span aria-hidden="true">→</span></a>
+        </div>
+        <div class="category-grid">
+          <a class="category-card reveal" href="#products" data-category-link="Mac"><span class="category-image"><img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=600&q=80" alt="" loading="lazy" /></span><span class="category-title">Mac</span><span class="category-subtitle">Power for your ideas</span><span class="category-arrow" aria-hidden="true">↗</span></a>
+          <a class="category-card reveal" href="#products" data-category-link="iPhone"><span class="category-image"><img src="https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=600&q=80" alt="" loading="lazy" /></span><span class="category-title">iPhone</span><span class="category-subtitle">A world in your pocket</span><span class="category-arrow" aria-hidden="true">↗</span></a>
+          <a class="category-card reveal" href="#products" data-category-link="iPad"><span class="category-image"><img src="https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=crop&w=600&q=80" alt="" loading="lazy" /></span><span class="category-title">iPad</span><span class="category-subtitle">Your ideas, in motion</span><span class="category-arrow" aria-hidden="true">↗</span></a>
+          <a class="category-card reveal" href="#products" data-category-link="Audio"><span class="category-image"><img src="https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?auto=format&fit=crop&w=600&q=80" alt="" loading="lazy" /></span><span class="category-title">Audio</span><span class="category-subtitle">Find your frequency</span><span class="category-arrow" aria-hidden="true">↗</span></a>
+          <a class="category-card reveal" href="#products" data-category-link="Watch"><span class="category-image"><img src="https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&w=600&q=80" alt="" loading="lazy" /></span><span class="category-title">Apple Watch</span><span class="category-subtitle">A little closer to you</span><span class="category-arrow" aria-hidden="true">↗</span></a>
+          <a class="category-card reveal" href="#products" data-category-link="Accessories"><span class="category-image"><img src="https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=600&q=80" alt="" loading="lazy" /></span><span class="category-title">Accessories</span><span class="category-subtitle">The finishing touch</span><span class="category-arrow" aria-hidden="true">↗</span></a>
+        </div>
+      </section>
+
+      <section class="benefits-band" id="benefits">
+        <div class="page-width benefits-grid">
+          <div class="benefit reveal"><span class="benefit-icon" aria-hidden="true">01</span><div><h3>Advice that listens</h3><p>Real people, thoughtful recommendations.</p></div></div>
+          <div class="benefit reveal"><span class="benefit-icon" aria-hidden="true">02</span><div><h3>Easy ways to pay</h3><p>Flexible options, clear from the start.</p></div></div>
+          <div class="benefit reveal"><span class="benefit-icon" aria-hidden="true">03</span><div><h3>Here when you need us</h3><p>Care and support, before and after.</p></div></div>
+          <div class="benefit reveal"><span class="benefit-icon" aria-hidden="true">04</span><div><h3>Delivered with care</h3><p>Careful packing, right to your door.</p></div></div>
+        </div>
+      </section>
+
+      <section class="products-section section-pad page-width" id="products">
+        <div class="section-heading reveal">
+          <div><p class="eyebrow">THE ONES YOU LOVE</p><h2>Customer favourites</h2><p class="section-description">Thoughtfully chosen tech to help you do more of what you love.</p></div>
+          <div class="product-filters" id="product-filters" aria-label="Filter products"></div>
+        </div>
+        <div class="product-grid" id="product-grid" aria-live="polite">
+          <% products.forEach(function(product, index) { %>
+            <%- include('partials/product-card', { product: product, index: index }) %>
+          <% }); %>
+        </div>
+        <script id="catalog-data" type="application/json"><%- JSON.stringify(products).replace(/</g, '\\u003c') %></script>
+        <p class="empty-results" id="empty-results" hidden>No products match that search. Try another name or category.</p>
+      </section>
+
+      <section class="feature-banner page-width reveal">
+        <div class="feature-copy">
+          <p class="eyebrow">MEET YOUR NEXT BIG IDEA</p>
+          <h2>Light on you.<br />Big on possibility.</h2>
+          <p>Everything you need to take your day somewhere new, wrapped in a remarkably light design.</p>
+          <a class="button button-light" href="#products" data-category-link="Mac">Discover MacBook <span aria-hidden="true">→</span></a>
+        </div>
+        <div class="feature-image"><img src="https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=1300&q=88" alt="Open laptop ready for a new idea" loading="lazy" /></div>
+        <span class="feature-serial" aria-hidden="true">MP — 001</span>
+      </section>
+
+      <section class="editorial-section section-pad page-width">
+        <div class="editorial-mark reveal" aria-hidden="true">M.</div>
+        <div class="editorial-copy reveal"><p class="eyebrow">THE MACPOINT WAY</p><h2>Good technology should feel like it belongs to you.</h2><p>We’re here to make choosing your next device feel clear, considered, and a little more personal. From first question to your next great idea, we’ll help you find the right fit.</p><a class="text-link" href="#footer">Get to know us <span aria-hidden="true">→</span></a></div>
+        <div class="editorial-image reveal"><img src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1000&q=85" alt="A calm, bright workspace" loading="lazy" /></div>
+      </section>
+
+      <section class="newsletter-section">
+        <div class="newsletter-inner page-width reveal">
+          <div><p class="eyebrow">A NOTE FROM MACPOINT</p><h2>Good things, occasionally.</h2><p>New arrivals, useful ideas, and the occasional reason to smile. No noise.</p></div>
+          <form class="newsletter-form" id="newsletter-form"><label class="sr-only" for="newsletter-email">Email address</label><input id="newsletter-email" type="email" placeholder="Your email address" required /><button class="button button-dark" type="submit">Sign me up <span aria-hidden="true">→</span></button><p class="form-message" id="newsletter-message" role="status"></p></form>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer" id="footer">
+      <div class="page-width footer-main">
+        <div class="footer-brand-col"><a class="brand" href="#top" aria-label="MacPoint home"><span class="brand-mark" aria-hidden="true">M<span>.</span></span><span class="brand-word">MACPOINT</span></a><p>Thoughtful technology.<br />Personal service.</p><span class="footer-coming-soon">Contact details coming soon</span></div>
+        <div class="footer-col"><h3>Explore</h3><a href="#products" data-category-link="Mac">Mac</a><a href="#products" data-category-link="iPhone">iPhone</a><a href="#products" data-category-link="iPad">iPad</a><a href="#products" data-category-link="Audio">Audio</a><a href="#products" data-category-link="Watch">Apple Watch</a></div>
+        <div class="footer-col"><h3>Help & info</h3><a href="#benefits">Delivery information</a><a href="#benefits">Payment options</a><a href="#benefits">Returns & warranty</a></div>
+        <div class="footer-note"><p class="eyebrow">MADE FOR YOUR NEXT</p><p>Good tools make space for good ideas. Find the ones that feel right for you.</p><a class="round-link" href="#top" aria-label="Back to top">↑</a></div>
+      </div>
+      <div class="footer-bottom page-width"><span>© <span id="current-year"><%= year %></span> MacPoint. All rights reserved.</span><span>Made for your next.</span><a href="#top">Back to top ↑</a></div>
+    </footer>
+
+    <dialog class="cart-drawer" id="cart-drawer" aria-labelledby="cart-title">
+      <div class="drawer-header"><div><p class="eyebrow">YOUR PICKS</p><h2 id="cart-title">Shopping bag <span id="drawer-item-count">(0)</span></h2></div><button class="icon-button" id="close-cart" aria-label="Close shopping bag"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg></button></div>
+      <div class="cart-items" id="cart-items"></div>
+      <div class="cart-empty" id="cart-empty"><span aria-hidden="true">M.</span><h3>Your bag is taking a breather.</h3><p>When something feels right, you’ll find it here.</p><button class="button button-dark" id="continue-shopping">Explore favourites <span aria-hidden="true">→</span></button></div>
+      <div class="cart-summary" id="cart-summary" hidden><div class="subtotal-row"><span>Subtotal</span><strong id="cart-subtotal">৳0</strong></div><p>Delivery and payment options are shown at checkout.</p><button class="button button-dark checkout-button" id="checkout-button">Continue to checkout <span aria-hidden="true">→</span></button><span class="checkout-note" id="checkout-note" role="status"></span></div>
+    </dialog>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>
