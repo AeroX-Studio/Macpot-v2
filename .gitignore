@@ -1,3 +1,6 @@
 node_modules/
 .env
 *.log
+data/store.json
+powershell.cmd
+

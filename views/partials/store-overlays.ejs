@@ -1,0 +1,154 @@
+<dialog class="cart-drawer" id="cart-drawer" aria-labelledby="cart-title">
+  <div class="drawer-header">
+    <div>
+      <p class="eyebrow">YOUR PICKS</p>
+      <h2 id="cart-title">Shopping bag <span id="drawer-item-count">(0)</span></h2>
+    </div>
+    <button class="icon-button" id="close-cart" aria-label="Close shopping bag">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
+    </button>
+  </div>
+  <div class="cart-items" id="cart-items"></div>
+  <div class="cart-empty" id="cart-empty">
+    <span aria-hidden="true">M.</span>
+    <h3>Your bag is taking a breather.</h3>
+    <p>When something feels right, you’ll find it here.</p>
+    <a class="button button-dark" href="/shop">Explore favourites <span aria-hidden="true">→</span></a>
+  </div>
+  <div class="cart-summary" id="cart-summary" hidden>
+    <form class="coupon-form" id="cart-coupon-form">
+      <label for="cart-coupon">A code, if you have one</label>
+      <div>
+        <input id="cart-coupon" name="code" autocomplete="off" placeholder="Enter coupon code" />
+        <button class="button button-light" type="submit">Apply</button>
+      </div>
+      <p class="form-message" id="cart-coupon-message" role="status"></p>
+    </form>
+    <div class="subtotal-row"><span>Subtotal</span><strong id="cart-subtotal">৳0</strong></div>
+    <p>Delivery and payment options are shown at checkout.</p>
+    <a class="button button-dark checkout-button" href="/checkout" id="checkout-button">Continue to checkout <span aria-hidden="true">→</span></a>
+  </div>
+</dialog>
+
+<dialog class="cart-drawer wishlist-drawer" id="wishlist-drawer" aria-labelledby="wishlist-title">
+  <div class="drawer-header">
+    <div>
+      <p class="eyebrow">SAVED FOR LATER</p>
+      <h2 id="wishlist-title">Your wishlist</h2>
+    </div>
+    <button class="icon-button" data-close-dialog="wishlist-drawer" aria-label="Close wishlist">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
+    </button>
+  </div>
+  <div class="wishlist-items" id="wishlist-items"></div>
+  <p class="empty-results" id="wishlist-empty">Your saved items will be right here.</p>
+</dialog>
+
+<dialog class="quick-view-dialog" id="quick-view" aria-label="Product quick view">
+  <button class="icon-button quick-view-close" data-close-dialog="quick-view" aria-label="Close quick view">×</button>
+  <div id="quick-view-content"></div>
+</dialog>
+
+<% if (typeof product === 'undefined' || !product) { %>
+<dialog class="size-guide-dialog" id="size-guide" aria-label="Measurement and configuration guide">
+  <div class="drawer-header">
+    <div>
+      <p class="eyebrow">MEASUREMENT & SPECIFICATION GUIDE</p>
+      <h2>Find the right fit & configuration</h2>
+    </div>
+    <button class="icon-button" data-close-dialog="size-guide" aria-label="Close guide">×</button>
+  </div>
+  <div class="size-guide-content" style="display:grid;gap:24px;padding-top:18px;">
+    <div>
+      <p class="eyebrow">APPAREL & SIZING CHART (INCHES)</p>
+      <p style="margin-bottom:12px;color:var(--ink-soft);font-size:11px;">Standard garment measurements across sizes. Measure around the fullest part of your chest and waist.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Standard Size</th>
+              <th>Numeric Size</th>
+              <th>Chest / Bust</th>
+              <th>Waist</th>
+              <th>Hips</th>
+              <th>Length</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>S</strong></td><td>36 – 38</td><td>36″ – 38″</td><td>30″ – 32″</td><td>38″ – 40″</td><td>38″</td></tr>
+            <tr><td><strong>M</strong></td><td>40</td><td>40″ – 41″</td><td>33″ – 34″</td><td>41″ – 42″</td><td>40″</td></tr>
+            <tr><td><strong>L</strong></td><td>42</td><td>42″ – 43″</td><td>35″ – 36″</td><td>43″ – 44″</td><td>42″</td></tr>
+            <tr><td><strong>XL</strong></td><td>44</td><td>44″ – 45″</td><td>37″ – 39″</td><td>45″ – 47″</td><td>44″</td></tr>
+            <tr><td><strong>XXL</strong></td><td>46</td><td>46″ – 47″</td><td>40″ – 42″</td><td>48″ – 50″</td><td>45″</td></tr>
+            <tr><td><strong>3XL</strong></td><td>48</td><td>48″ – 50″</td><td>43″ – 45″</td><td>51″ – 53″</td><td>46″</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div style="border-top:1px solid var(--line);padding-top:18px;">
+      <p class="eyebrow">HARDWARE & DEVICE CONFIGURATIONS</p>
+      <p style="margin-bottom:12px;color:var(--ink-soft);font-size:11px;">Guidance for picking your device storage, display size, and performance.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Tier</th>
+              <th>Recommended For</th>
+              <th>Typical Storage</th>
+              <th>Memory / RAM</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Everyday</strong></td><td>Browsing, streaming, emails, study</td><td>128 GB – 256 GB</td><td>8 GB – 16 GB</td></tr>
+            <tr><td><strong>Productivity</strong></td><td>Multitasking, coding, large libraries</td><td>512 GB</td><td>16 GB – 24 GB</td></tr>
+            <tr><td><strong>Pro Workflows</strong></td><td>4K/8K video editing, 3D rendering, heavy tasks</td><td>1 TB – 2 TB+</td><td>32 GB – 128 GB</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</dialog>
+<% } %>
+
+<% const whatsappDigits = ((typeof settings !== 'undefined' && settings?.whatsapp) || '01700000000').replace(/\D/g, ''); const whatsappIntl = whatsappDigits.startsWith('880') ? whatsappDigits : (whatsappDigits.startsWith('0') ? '88' + whatsappDigits : '880' + whatsappDigits); %>
+<aside class="whatsapp-widget" id="whatsapp-widget" aria-label="WhatsApp quick chat" style="position:fixed;z-index:9999;left:max(24px, env(safe-area-inset-left));bottom:max(24px, env(safe-area-inset-bottom));">
+  <a class="whatsapp-floating-btn" href="https://wa.me/<%= whatsappIntl %>?text=<%= encodeURIComponent('Hello MacPoint! I would like to inquire about Apple products.') %>" target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp" style="display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 18px 0 14px;border-radius:28px;background:#25d366;color:#ffffff;font-size:12px;font-weight:700;text-decoration:none;box-shadow:0 8px 24px rgba(37, 211, 102, .38);transition:transform .2s ease, box-shadow .2s ease;">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">
+      <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.3-1.39a9.87 9.87 0 0 0 4.69 1.18h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 18.06h-.01c-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.13.82.84-3.05-.2-.31a8.13 8.13 0 0 1-1.25-4.28c0-4.5 3.66-8.16 8.17-8.16 2.18 0 4.23.85 5.77 2.39a8.1 8.1 0 0 1 2.4 5.77c-.01 4.51-3.67 8.16-8.16 8.16Zm4.47-6.1c-.24-.12-1.45-.72-1.68-.8-.23-.08-.39-.12-.56.12-.17.24-.64.8-.78.96-.15.17-.3.19-.54.07-.25-.12-1.05-.39-2-1.23-.74-.66-1.23-1.47-1.38-1.72-.15-.24-.02-.38.1-.5.11-.11.25-.28.37-.43.12-.14.16-.24.24-.4.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.42-.56-.43h-.48c-.16 0-.43.06-.66.31-.22.25-.86.84-.86 2.06 0 1.21.88 2.38 1.01 2.55.12.17 1.74 2.66 4.22 3.73.59.25 1.05.41 1.41.52.59.19 1.13.16 1.56.1.47-.07 1.45-.59 1.65-1.16.21-.58.21-1.07.15-1.17-.06-.1-.23-.17-.47-.28Z"/>
+    </svg>
+    <span class="whatsapp-btn-text">WhatsApp</span>
+  </a>
+</aside>
+
+<section class="chat-widget" id="chat-widget" aria-label="MacPoint support chat" style="position:fixed;z-index:9998;right:max(24px, env(safe-area-inset-right));bottom:max(24px, env(safe-area-inset-bottom));">
+  <button class="chat-launcher" id="chat-launcher" aria-label="Open support chat" aria-expanded="false">
+    <span aria-hidden="true">M.</span>
+    <span class="chat-unread" id="chat-unread" hidden></span>
+  </button>
+  <div class="chat-panel" id="chat-panel" style="display:none !important;" hidden>
+    <div class="chat-panel-head">
+      <div>
+        <p class="eyebrow">HERE TO HELP</p>
+        <h2>Talk to MacPoint</h2>
+      </div>
+      <button class="icon-button" id="chat-close" aria-label="Close chat">×</button>
+    </div>
+    <div class="chat-intro" id="chat-intro">
+      <p>Leave a note and our team will get back to you.</p>
+      <form id="chat-start-form">
+        <label>Name<input name="name" autocomplete="name" placeholder="Your name" required /></label>
+        <label>Mobile number<input name="phone" type="tel" autocomplete="tel" placeholder="01XXXXXXXXX" required /></label>
+        <button class="button button-dark" type="submit">Start a conversation <span>→</span></button>
+        <p class="form-message" id="chat-start-error" role="status"></p>
+      </form>
+    </div>
+    <div class="chat-stream" id="chat-stream" hidden aria-live="polite"></div>
+    <form class="chat-compose" id="chat-compose" hidden>
+      <label class="sr-only" for="chat-message">Your message</label>
+      <input id="chat-message" name="message" maxlength="2000" placeholder="Write a message…" required />
+      <button class="button button-dark" type="submit" aria-label="Send message">Send</button>
+    </form>
+  </div>
+</section>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title><%= title %></title><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" /><link rel="stylesheet" href="/css/styles.css?v=2.2.0" /><link rel="stylesheet" href="/css/commerce.css?v=2.2.0" /><script src="/js/app.js?v=2.2.0" defer></script><script src="/js/checkout.js?v=2.2.0" defer></script></head>
+<body data-delivery-dhaka="<%= settings.deliveryDhaka %>" data-delivery-outside-dhaka="<%= settings.deliveryOutsideDhaka %>" data-free-delivery-threshold="<%= settings.freeDeliveryThreshold %>"><a class="skip-link" href="#main">Skip to content</a><%- include('partials/store-header') %>
+<main id="main" class="page-width commerce-page checkout-page">
+  <div class="breadcrumb"><a href="/">Home</a><span>/</span><a href="/shop">Shop</a><span>/</span><span>Checkout</span></div>
+  <section class="commerce-heading"><p class="eyebrow">A FEW DETAILS, THEN IT’S YOURS</p><h1>Let’s get it to you.</h1><p>Cash on delivery, with clear delivery costs before you place your order.</p></section>
+  <form id="checkout-form" class="checkout-layout">
+    <div class="checkout-form-column">
+      <% if (currentUser) { %><p class="signed-in-note">Signed in as <strong><%= currentUser.name %></strong>. Your details are ready to review.</p><% } else { %><p class="signed-in-note">Checking out as a guest. <a href="/login?next=%2Fcheckout">Sign in to your account</a></p><% } %>
+      <% if (savedAddresses.length) { %><label class="saved-address-select">Use a saved address<select id="saved-address"><option value="">Enter a new address</option><% savedAddresses.forEach(function(address) { %><option value="<%= address.id %>" data-name="<%= address.name %>" data-phone="<%= address.phone %>" data-address="<%= address.address %>" data-city="<%= address.city %>" data-zone="<%= address.zone %>"><%= address.label %> · <%= address.city %><%= address.isDefault ? ' · Default' : '' %></option><% }); %></select></label><script id="saved-address-data" type="application/json"><%- JSON.stringify(savedAddresses).replace(/</g, '\\u003c') %></script><% } %>
+      <section class="form-card"><p class="eyebrow">DELIVERY DETAILS</p><h2>Where should we bring it?</h2><div class="form-grid">
+        <label class="field-wide">Full name<input name="name" autocomplete="name" required value="<%= currentUser?.name || '' %>" /></label>
+        <label>Mobile number<input name="phone" type="tel" autocomplete="tel" placeholder="01XXXXXXXXX" required value="<%= currentUser?.phone || '' %>" /><small>Use your 11-digit Bangladesh mobile number.</small></label>
+        <label>City / district<input name="city" autocomplete="address-level2" required /></label>
+        <label class="field-wide">Delivery address<textarea name="address" autocomplete="street-address" rows="3" required></textarea></label>
+        <fieldset class="delivery-zone field-wide"><legend>Delivery area</legend><label><input type="radio" name="zone" value="dhaka" required checked /><span>Inside Dhaka <small>৳<%= formatPrice(settings.deliveryDhaka) %></small></span></label><label><input type="radio" name="zone" value="outside_dhaka" /><span>Outside Dhaka <small>৳<%= formatPrice(settings.deliveryOutsideDhaka) %></small></span></label></fieldset>
+        <label class="field-wide">Delivery instructions <span class="optional-label">Optional</span><textarea name="notes" rows="2" placeholder="A landmark or a good time to call"></textarea></label>
+      </div></section>
+      <section class="form-card"><p class="eyebrow">PAYMENT</p><h2>Simple and straightforward.</h2><div class="payment-choice"><span class="payment-radio" aria-hidden="true"></span><div><strong>Cash on delivery</strong><p>Pay in cash when your order arrives.</p></div><span class="cod-mark">COD</span></div></section>
+    </div>
+    <aside class="checkout-summary"><p class="eyebrow">YOUR ORDER</p><h2>In your bag</h2><div id="checkout-items" class="checkout-items"></div>
+      <div class="coupon-form" id="checkout-coupon-form"><label for="checkout-coupon">Discount code</label><div><input id="checkout-coupon" name="code" autocomplete="off" /><button class="button button-light" id="checkout-coupon-apply" type="button">Apply</button></div><p class="form-message" id="checkout-coupon-message" role="status"></p></div>
+      <div class="summary-lines"><p><span>Subtotal</span><strong id="checkout-subtotal">৳0</strong></p><p><span>Discount</span><strong id="checkout-discount">− ৳0</strong></p><p><span>Delivery</span><strong id="checkout-delivery">৳0</strong></p><p class="summary-total"><span>Total</span><strong id="checkout-total">৳0</strong></p></div>
+      <p class="checkout-security">Your order is priced again against the live catalog before it is placed.</p><button class="button button-dark place-order-button" type="submit">Place COD order <span>→</span></button><p class="form-message" id="checkout-error" role="alert"></p><a class="text-link" href="/shop">← Continue shopping</a>
+    </aside>
+  </form>
+</main><%- include('partials/store-footer') %><%- include('partials/store-overlays') %></body></html>

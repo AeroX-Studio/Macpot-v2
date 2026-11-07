@@ -1,231 +1,229 @@
-const products = JSON.parse(document.querySelector("#catalog-data").textContent);
+(() => {
+  const dataNode = document.querySelector("#catalog-data");
+  if (!dataNode) return;
+  let products = [];
+  try { products = JSON.parse(dataNode.textContent); } catch (_error) { products = []; }
+  const grid = document.querySelector("#product-grid");
+  const filtersRoot = document.querySelector("#product-filters");
+  const empty = document.querySelector("#empty-results");
+  const esc = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
+  const price = (amount) => "৳" + Number(amount || 0).toLocaleString("en-BD");
+  
+  let activeCategory = "All";
+  const uniqueCategories = [...new Set(products.map((product) => product.category).filter(Boolean))];
+  const categories = ["All", ...uniqueCategories];
 
-const slides = [
-  { eyebrow: "MADE FOR WHAT’S NEXT", title: "A little more<br />wonder in every day.", description: "Meet the devices that make your big ideas, daily rituals, and everything in between feel effortless.", note: "MacBook Air · Built for the long run", image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=1400&q=88", alt: "A slim silver laptop on a bright desk" },
-  { eyebrow: "A NEW WAY TO SEE IT", title: "Your world,<br />a little closer.", description: "A brilliant camera, thoughtful design, and all the things you love—right where you need them.", note: "iPhone · Made to move with you", image: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=1400&q=88", alt: "A smartphone photographed on a clean surface" },
-  { eyebrow: "SOUND THAT STAYS WITH YOU", title: "Find your own<br />kind of quiet.", description: "Settle into every note with personal audio made for your commute, your focus, and your off-switch.", note: "Audio · Your space, anywhere", image: "https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?auto=format&fit=crop&w=1400&q=88", alt: "Wireless earbuds in a charging case" },
-];
-
-const formatPrice = (amount) => `৳${amount.toLocaleString("en-BD")}`;
-const productGrid = document.querySelector("#product-grid");
-const filtersRoot = document.querySelector("#product-filters");
-const emptyResults = document.querySelector("#empty-results");
-const cart = new Map();
-const favorites = new Set();
-let activeCategory = "All";
-let searchTerm = "";
-let activeSlide = 0;
-let toastTimeout;
-
-function renderProducts() {
-  const visibleProducts = products.filter((product) => {
-    const categoryMatches = activeCategory === "All" || product.category === activeCategory;
-    const query = searchTerm.trim().toLowerCase();
-    const textMatches = !query || `${product.name} ${product.category} ${product.description}`.toLowerCase().includes(query);
-    return categoryMatches && textMatches;
-  });
-  productGrid.innerHTML = visibleProducts.map((product, index) => `
-    <article class="product-card reveal is-visible" style="transition-delay:${Math.min(index * 45, 180)}ms">
-      <div class="product-image-wrap"><img src="${product.image}" alt="${product.alt}" loading="lazy" /><span class="product-badge">${product.badge}</span>
-        <button class="favorite-button" data-favorite="${product.id}" aria-label="Add ${product.name} to wishlist" aria-pressed="${favorites.has(product.id)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.4 8.7c0 4.1-8.4 10-8.4 10s-8.4-5.9-8.4-10A4.2 4.2 0 0 1 12 6.4a4.2 4.2 0 0 1 8.4 2.3Z" /></svg></button>
-      </div>
-      <div class="product-info"><p class="product-category">${product.category} · ${product.description}</p><h3 class="product-name">${product.name}</h3>
-        <div class="product-price"><strong>${formatPrice(product.price)}</strong><span>Illustrative price</span></div>
-        <button class="button button-dark" data-add="${product.id}">Add to bag <span aria-hidden="true">+</span></button>
-      </div>
-    </article>`).join("");
-  emptyResults.hidden = visibleProducts.length > 0;
-  productGrid.hidden = visibleProducts.length === 0;
-  renderFilters();
-}
-
-function renderFilters() {
-  const categories = ["All", "Mac", "iPhone", "iPad", "Audio", "Watch", "Accessories"];
-  filtersRoot.innerHTML = categories.map((category) => `<button class="filter-chip${category === activeCategory ? " is-active" : ""}" data-filter="${category}" aria-pressed="${category === activeCategory}">${category === "All" ? "All" : category}</button>`).join("");
-}
-
-function renderCart() {
-  const entries = [...cart.entries()].map(([id, quantity]) => ({ product: products.find((item) => item.id === id), quantity })).filter(({ product }) => product);
-  const count = entries.reduce((sum, entry) => sum + entry.quantity, 0);
-  const total = entries.reduce((sum, entry) => sum + entry.product.price * entry.quantity, 0);
-  document.querySelector("#cart-count").textContent = count;
-  document.querySelector("#cart-trigger").setAttribute("aria-label", `Shopping bag, ${count} items`);
-  document.querySelector("#drawer-item-count").textContent = `(${count})`;
-  document.querySelector("#cart-empty").hidden = count > 0;
-  document.querySelector("#cart-summary").hidden = count === 0;
-  document.querySelector("#cart-subtotal").textContent = formatPrice(total);
-  document.querySelector("#cart-items").innerHTML = entries.map(({ product, quantity }) => `
-    <article class="cart-line"><img src="${product.image}" alt="" /><div><h3>${product.name}</h3><strong>${formatPrice(product.price)}</strong><div class="quantity-control"><button data-quantity="${product.id}" data-change="-1" aria-label="Remove one ${product.name}">−</button><span>${quantity}</span><button data-quantity="${product.id}" data-change="1" aria-label="Add one ${product.name}">+</button></div></div><button class="remove-item" data-remove="${product.id}">Remove</button></article>`).join("");
-}
-
-function updateFavorites() {
-  document.querySelectorAll("[data-favorite]").forEach((button) => {
-    const active = favorites.has(button.dataset.favorite);
-    button.setAttribute("aria-pressed", String(active));
-    button.setAttribute("aria-label", `${active ? "Remove" : "Add"} ${products.find((item) => item.id === button.dataset.favorite)?.name || "item"} ${active ? "from" : "to"} wishlist`);
-  });
-  document.querySelector("#wishlist-count").textContent = favorites.size;
-  document.querySelector("#wishlist-trigger").setAttribute("aria-label", `Wishlist, ${favorites.size} items`);
-}
-
-function showToast(message) {
-  const toast = document.querySelector("#toast");
-  toast.textContent = message;
-  toast.classList.add("is-visible");
-  clearTimeout(toastTimeout);
-  toastTimeout = setTimeout(() => toast.classList.remove("is-visible"), 2400);
-}
-
-function setCategory(category) {
-  activeCategory = category;
-  renderProducts();
-  document.querySelector("#products").scrollIntoView({ behavior: "smooth", block: "start" });
-}
-
-function openCart() {
-  const drawer = document.querySelector("#cart-drawer");
-  drawer.showModal();
-  document.querySelector("#cart-trigger").setAttribute("aria-expanded", "true");
-  document.querySelector("#close-cart").focus();
-}
-
-function closeCart() {
-  const drawer = document.querySelector("#cart-drawer");
-  if (drawer.open) drawer.close();
-  document.querySelector("#cart-trigger").setAttribute("aria-expanded", "false");
-  document.querySelector("#cart-trigger").focus();
-}
-
-function changeSlide(index) {
-  activeSlide = (index + slides.length) % slides.length;
-  const slide = slides[activeSlide];
-  document.querySelector("#hero-eyebrow").textContent = slide.eyebrow;
-  document.querySelector("#hero-title").innerHTML = slide.title;
-  document.querySelector("#hero-description").textContent = slide.description;
-  document.querySelector("#hero-note").textContent = slide.note;
-  const image = document.querySelector("#hero-image");
-  image.style.opacity = "0";
-  window.setTimeout(() => {
-    image.src = slide.image;
-    image.alt = slide.alt;
-    image.onload = () => { image.style.opacity = "1"; };
-  }, 150);
-  document.querySelector("#hero-visual .hero-index").textContent = String(activeSlide + 1).padStart(2, "0");
-  document.querySelector("#slide-number").textContent = `${String(activeSlide + 1).padStart(2, "0")} / ${String(slides.length).padStart(2, "0")}`;
-  document.querySelectorAll(".slider-dot").forEach((dot, dotIndex) => {
-    dot.classList.toggle("is-active", dotIndex === activeSlide);
-    dot.setAttribute("aria-pressed", String(dotIndex === activeSlide));
-  });
-}
-
-document.addEventListener("click", (event) => {
-  const addButton = event.target.closest("[data-add]");
-  if (addButton) {
-    const id = addButton.dataset.add;
-    cart.set(id, (cart.get(id) || 0) + 1);
-    renderCart();
-    showToast(`${products.find((product) => product.id === id).name} added to your bag`);
+  function renderFilters() {
+    if (!filtersRoot) return;
+    filtersRoot.innerHTML = categories.map((category) =>
+      '<button class="filter-chip' + (category === activeCategory ? " is-active" : "") + '" data-filter="' + esc(category) + '" aria-pressed="' + (category === activeCategory) + '">' + esc(category) + '</button>'
+    ).join("");
   }
-  const favoriteButton = event.target.closest("[data-favorite]");
-  if (favoriteButton) {
-    const id = favoriteButton.dataset.favorite;
-    favorites.has(id) ? favorites.delete(id) : favorites.add(id);
-    updateFavorites();
+
+  function renderProducts() {
+    if (!grid) return;
+    const visible = activeCategory === "All" ? products : products.filter((product) => product.category === activeCategory);
+    grid.innerHTML = visible.map((product, index) => {
+      const slug = product.slug || product.id;
+      const productPrice = Number(product.salePrice || product.price);
+      const regularPrice = Number(product.price);
+      const variantId = product.variants?.[0]?.id || "";
+      const isAvailable = Number(product.stock) > 0;
+      return '<article class="product-card reveal is-visible" style="transition-delay:' + Math.min(index * 45, 180) + 'ms">' +
+        '<div class="product-image-wrap"><a href="/product/' + encodeURIComponent(slug) + '" aria-label="View ' + esc(product.name) + '"><img src="' + esc(product.image) + '" alt="' + esc(product.alt || product.name) + '" loading="lazy" /></a><span class="product-badge">' + esc(product.badge || "MacPoint pick") + '</span>' +
+        '<button class="favorite-button" data-favorite="' + esc(product.id) + '" aria-label="Add ' + esc(product.name) + ' to wishlist" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.4 8.7c0 4.1-8.4 10-8.4 10s-8.4-5.9-8.4-10A4.2 4.2 0 0 1 12 6.4a4.2 4.2 0 0 1 8.4 2.3Z" /></svg></button><button class="quick-view-trigger" data-quick-view="' + esc(slug) + '">Quick view</button></div>' +
+        '<div class="product-info"><p class="product-category">' + esc(product.category) + ' · ' + esc(product.description || "") + '</p><h3 class="product-name"><a href="/product/' + encodeURIComponent(slug) + '">' + esc(product.name) + '</a></h3>' +
+        '<div class="product-price"><strong>' + (product.salePrice ? '<del>' + price(regularPrice) + '</del> ' : '') + price(productPrice) + '</strong><span>' + (isAvailable ? Number(product.stock) + ' available' : 'Out of stock') + '</span></div>' +
+        '<button class="button button-dark" data-add="' + esc(product.id) + '" data-variant-id="' + esc(variantId) + '"' + (!isAvailable ? " disabled" : "") + '>Add to bag <span aria-hidden="true">+</span></button></div></article>';
+    }).join("");
+    grid.hidden = visible.length === 0;
+    if (empty) empty.hidden = visible.length > 0;
+    renderFilters();
+    document.dispatchEvent(new CustomEvent("macpoint:catalog-render"));
   }
-  const filterButton = event.target.closest("[data-filter]");
-  if (filterButton) {
-    activeCategory = filterButton.dataset.filter;
+
+  function setCategory(category, scroll = true) {
+    activeCategory = categories.includes(category) ? category : "All";
     renderProducts();
+    if (scroll) {
+      const target = document.querySelector("#products");
+      if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   }
-  const categoryLink = event.target.closest("[data-category-link]");
-  if (categoryLink) {
+
+  filtersRoot?.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-filter]");
+    if (button) {
+      activeCategory = button.dataset.filter;
+      renderProducts();
+    }
+  });
+
+  document.addEventListener("click", (event) => {
+    const link = event.target.closest("[data-category-link]");
+    if (!link) return;
     event.preventDefault();
-    setCategory(categoryLink.dataset.categoryLink);
-    document.querySelector("#primary-nav").classList.remove("is-open");
-    document.querySelector("#menu-toggle").setAttribute("aria-expanded", "false");
-  }
-  const quantityButton = event.target.closest("[data-quantity]");
-  if (quantityButton) {
-    const id = quantityButton.dataset.quantity;
-    const quantity = (cart.get(id) || 0) + Number(quantityButton.dataset.change);
-    quantity > 0 ? cart.set(id, quantity) : cart.delete(id);
-    renderCart();
-  }
-  const removeButton = event.target.closest("[data-remove]");
-  if (removeButton) { cart.delete(removeButton.dataset.remove); renderCart(); }
-});
+    setCategory(link.dataset.categoryLink);
+    document.querySelector("#primary-nav")?.classList.remove("is-open");
+    document.querySelector("#menu-toggle")?.setAttribute("aria-expanded", "false");
+  });
 
-document.querySelector("#search-form").addEventListener("submit", (event) => event.preventDefault());
-document.querySelector("#site-search").addEventListener("input", (event) => {
-  searchTerm = event.target.value;
-  renderProducts();
-  document.querySelector("#products").scrollIntoView({ behavior: "smooth", block: "start" });
-});
-document.addEventListener("keydown", (event) => {
-  if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") { event.preventDefault(); document.querySelector("#site-search").focus(); }
-});
-document.querySelector("#cart-trigger").addEventListener("click", openCart);
-document.querySelector("#account-trigger").addEventListener("click", () => showToast("Account sign-in is not connected in this preview."));
-document.querySelector("#close-cart").addEventListener("click", closeCart);
-document.querySelector("#cart-drawer").addEventListener("click", (event) => {
-  if (event.target === event.currentTarget) closeCart();
-});
-document.querySelector("#cart-drawer").addEventListener("cancel", (event) => {
-  event.preventDefault();
-  closeCart();
-});
-document.querySelector("#continue-shopping").addEventListener("click", closeCart);
-document.querySelector("#checkout-button").addEventListener("click", () => { document.querySelector("#checkout-note").textContent = "Checkout will be available when MacPoint payments are connected."; });
-document.querySelector("#wishlist-trigger").addEventListener("click", () => {
-  if (favorites.size === 0) { showToast("Save a favourite with the heart on any product."); return; }
-  activeCategory = "All";
-  searchTerm = "";
-  document.querySelector("#site-search").value = "";
-  renderProducts();
-  productGrid.innerHTML = products.filter((product) => favorites.has(product.id)).map((product) => `
-    <article class="product-card reveal is-visible"><div class="product-image-wrap"><img src="${product.image}" alt="${product.alt}" loading="lazy" /><span class="product-badge">Saved</span><button class="favorite-button" data-favorite="${product.id}" aria-label="Remove ${product.name} from wishlist" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.4 8.7c0 4.1-8.4 10-8.4 10s-8.4-5.9-8.4-10A4.2 4.2 0 0 1 12 6.4a4.2 4.2 0 0 1 8.4 2.3Z" /></svg></button></div><div class="product-info"><p class="product-category">${product.category} · ${product.description}</p><h3 class="product-name">${product.name}</h3><div class="product-price"><strong>${formatPrice(product.price)}</strong><span>Illustrative price</span></div><button class="button button-dark" data-add="${product.id}">Add to bag <span aria-hidden="true">+</span></button></div></article>`).join("");
-  emptyResults.hidden = true;
-  productGrid.hidden = false;
-  document.querySelector("#products").scrollIntoView({ behavior: "smooth", block: "start" });
-});
-document.querySelector("#hero-prev").addEventListener("click", () => changeSlide(activeSlide - 1));
-document.querySelector("#hero-next").addEventListener("click", () => changeSlide(activeSlide + 1));
-document.querySelector("#slider-dots").innerHTML = slides.map((_, index) => `<button class="slider-dot${index === 0 ? " is-active" : ""}" aria-label="Show slide ${index + 1}" aria-pressed="${index === 0}" data-slide="${index}"></button>`).join("");
-document.querySelector("#slider-dots").addEventListener("click", (event) => {
-  const dot = event.target.closest("[data-slide]");
-  if (dot) changeSlide(Number(dot.dataset.slide));
-});
-document.querySelector("#menu-toggle").addEventListener("click", (event) => {
-  const nav = document.querySelector("#primary-nav");
-  const isOpen = nav.classList.toggle("is-open");
-  event.currentTarget.setAttribute("aria-expanded", String(isOpen));
-  event.currentTarget.setAttribute("aria-label", isOpen ? "Close navigation" : "Open navigation");
-});
-document.querySelector("#newsletter-form").addEventListener("submit", (event) => {
-  event.preventDefault();
-  document.querySelector("#newsletter-message").textContent = "Thanks for your interest. This preview does not send emails yet.";
-  event.currentTarget.reset();
-});
+  const fallbackSlides = [
+    { eyebrow: "MADE FOR WHAT’S NEXT", title: "A little more<br />wonder in every day.", description: "Meet the devices that make your big ideas, daily rituals, and everything in between feel effortless.", note: "MacBook Air · Built for the long run", image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=1400&q=88", alt: "A slim silver laptop on a bright desk" },
+    { eyebrow: "A NEW WAY TO SEE IT", title: "Your world,<br />a little closer.", description: "A brilliant camera, thoughtful design, and all the things you love—right where you need them.", note: "iPhone · Made to move with you", image: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=1400&q=88", alt: "A smartphone photographed on a clean surface" },
+    { eyebrow: "SOUND THAT STAYS WITH YOU", title: "Find your own<br />kind of quiet.", description: "Settle into every note with personal audio made for your commute, your focus, and your off-switch.", note: "Audio · Your space, anywhere", image: "https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?auto=format&fit=crop&w=1400&q=88", alt: "Wireless earbuds in a charging case" },
+  ];
+  const bannerNode = document.querySelector("#banner-data");
+  let slides = fallbackSlides;
+  if (bannerNode) {
+    try {
+      const saved = JSON.parse(bannerNode.textContent);
+      if (Array.isArray(saved) && saved.length) slides = saved;
+    } catch (_error) {
+      /* Use fallback slides */
+    }
+  }
 
-const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-if ("IntersectionObserver" in window && !reducedMotion) {
-  const revealObserver = new IntersectionObserver((entries, observer) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) { entry.target.classList.add("is-visible"); observer.unobserve(entry.target); }
+  let activeSlide = 0;
+  let isFirstSlideRender = true;
+
+  function changeSlide(index) {
+    activeSlide = (index + slides.length) % slides.length;
+    const slide = slides[activeSlide];
+    const eyebrow = document.querySelector("#hero-eyebrow");
+    const heroTitle = document.querySelector("#hero-title");
+    const heroDesc = document.querySelector("#hero-description");
+    const heroNote = document.querySelector("#hero-note");
+    const image = document.querySelector("#hero-image");
+
+    if (eyebrow) {
+      eyebrow.textContent = slide.eyebrow;
+      if (!isFirstSlideRender) {
+        eyebrow.style.animation = "none";
+        eyebrow.offsetHeight;
+        eyebrow.style.animation = "slideTextFadeIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both";
+      }
+    }
+    if (heroTitle) {
+      const cleanHtml = String(slide.title || "").replace(/\r?\n/g, "<br />");
+      heroTitle.innerHTML = cleanHtml;
+      if (!isFirstSlideRender) {
+        heroTitle.style.animation = "none";
+        heroTitle.offsetHeight;
+        heroTitle.style.animation = "slideTextFadeIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both";
+      }
+    }
+    if (heroDesc) {
+      heroDesc.textContent = slide.description;
+      if (!isFirstSlideRender) {
+        heroDesc.style.animation = "none";
+        heroDesc.offsetHeight;
+        heroDesc.style.animation = "slideTextFadeIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both";
+      }
+    }
+    if (heroNote) heroNote.textContent = slide.note;
+
+    if (image) {
+      if (isFirstSlideRender) {
+        image.src = slide.image;
+        image.alt = slide.alt || "MacPoint featured product";
+        image.style.opacity = "1";
+      } else {
+        image.style.opacity = "0.2";
+        image.style.transform = "scale(0.98)";
+        window.setTimeout(() => {
+          image.src = slide.image;
+          image.alt = slide.alt || "MacPoint featured product";
+          const revealImg = () => {
+            image.style.opacity = "1";
+            image.style.transform = "scale(1)";
+          };
+          if (image.complete) revealImg();
+          else image.onload = revealImg;
+        }, 100);
+      }
+    }
+
+    const heroIndexNode = document.querySelector("#hero-visual .hero-index");
+    if (heroIndexNode) heroIndexNode.textContent = String(activeSlide + 1).padStart(2, "0");
+    const slideNumberNode = document.querySelector("#slide-number");
+    if (slideNumberNode) slideNumberNode.textContent = String(activeSlide + 1).padStart(2, "0") + " / " + String(slides.length).padStart(2, "0");
+
+    document.querySelectorAll(".slider-dot").forEach((dot, dotIndex) => {
+      dot.classList.toggle("is-active", dotIndex === activeSlide);
+      dot.setAttribute("aria-pressed", String(dotIndex === activeSlide));
     });
-  }, { threshold: .12 });
-  document.querySelectorAll(".reveal:not(.is-visible)").forEach((element) => revealObserver.observe(element));
-}
-const heroSection = document.querySelector(".hero");
-let carouselTimer;
-function startCarousel() {
-  if (reducedMotion || carouselTimer) return;
-  carouselTimer = window.setInterval(() => changeSlide(activeSlide + 1), 7200);
-}
-function stopCarousel() { window.clearInterval(carouselTimer); carouselTimer = undefined; }
-if ("IntersectionObserver" in window && !reducedMotion) {
-  new IntersectionObserver(([entry]) => entry.isIntersecting ? startCarousel() : stopCarousel(), { threshold: .18 }).observe(heroSection);
-} else if (!reducedMotion) startCarousel();
 
-renderProducts();
-renderCart();
+    isFirstSlideRender = false;
+  }
+
+  const sliderDots = document.querySelector("#slider-dots");
+  if (sliderDots) {
+    sliderDots.innerHTML = slides.map((_slide, index) =>
+      '<button class="slider-dot' + (index === 0 ? " is-active" : "") + '" aria-label="Show slide ' + (index + 1) + '" aria-pressed="' + (index === 0) + '" data-slide="' + index + '"></button>'
+    ).join("");
+  }
+
+  function restartCarousel() {
+    stopCarousel();
+    startCarousel();
+  }
+
+  document.querySelector("#hero-prev")?.addEventListener("click", () => { changeSlide(activeSlide - 1); restartCarousel(); });
+  document.querySelector("#hero-next")?.addEventListener("click", () => { changeSlide(activeSlide + 1); restartCarousel(); });
+  sliderDots?.addEventListener("click", (event) => {
+    const dot = event.target.closest("[data-slide]");
+    if (dot) { changeSlide(Number(dot.dataset.slide)); restartCarousel(); }
+  });
+
+  function checkVisibleNow() {
+    const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+    document.querySelectorAll(".reveal:not(.is-visible)").forEach((element) => {
+      const rect = element.getBoundingClientRect();
+      if (rect.top < windowHeight * 0.95 && rect.bottom > 0) {
+        element.classList.add("is-visible");
+      }
+    });
+  }
+
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!reducedMotion) {
+    document.documentElement.classList.add("has-reveal");
+    checkVisibleNow();
+    if ("IntersectionObserver" in window) {
+      const revealObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.05 });
+      document.querySelectorAll(".reveal:not(.is-visible)").forEach((element) => revealObserver.observe(element));
+    }
+    window.addEventListener("scroll", checkVisibleNow, { passive: true });
+    window.addEventListener("resize", checkVisibleNow, { passive: true });
+  }
+
+  const hero = document.querySelector(".hero");
+  let carouselTimer;
+  function startCarousel() {
+    if (reducedMotion || carouselTimer || slides.length <= 1) return;
+    carouselTimer = window.setInterval(() => changeSlide(activeSlide + 1), 7200);
+  }
+  function stopCarousel() {
+    if (carouselTimer) {
+      window.clearInterval(carouselTimer);
+      carouselTimer = undefined;
+    }
+  }
+
+  if (hero && "IntersectionObserver" in window && !reducedMotion) {
+    new IntersectionObserver(([entry]) => entry.isIntersecting ? startCarousel() : stopCarousel(), { threshold: 0.18 }).observe(hero);
+  } else if (!reducedMotion) {
+    startCarousel();
+  }
+
+  changeSlide(0);
+  renderFilters();
+})();

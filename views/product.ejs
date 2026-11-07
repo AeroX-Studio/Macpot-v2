@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><meta name="theme-color" content="#fff" /><title><%= title %></title><link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" /><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" /><link rel="stylesheet" href="/css/styles.css?v=2.2.0" /><link rel="stylesheet" href="/css/commerce.css?v=2.2.0" /><script src="/js/app.js?v=2.2.0" defer></script></head>
+<body><a class="skip-link" href="#main">Skip to content</a><%- include('partials/store-header') %>
+<main id="main" class="page-width commerce-page">
+  <% const initialVariant = product.variants.find(function(variant) { return variant.stock > 0; }) || product.variants[0]; const initialPrice = initialVariant?.price || product.salePrice || product.price; %>
+  <div class="breadcrumb"><a href="/">Home</a><span>/</span><a href="/category/<%= product.category.toLowerCase() %>"><%= product.category %></a><span>/</span><span><%= product.name %></span></div>
+  <section class="product-detail">
+    <div class="product-gallery"><div class="product-main-image"><img id="product-main-image" src="<%= product.image %>" alt="<%= product.alt %>" /></div><div class="product-thumbnails"><% product.images.forEach(function(image, index) { %><button class="product-thumbnail <%= index === 0 ? 'is-active' : '' %>" data-image="<%= image.url %>" data-alt="<%= image.alt %>" aria-label="Show product photo <%= index + 1 %>"><img src="<%= image.url %>" alt="" /></button><% }); %></div></div>
+    <div class="product-detail-copy"><p class="eyebrow"><%= product.category %> · <%= product.sku %></p><h1><%= product.name %></h1><p class="product-lede"><%= product.description %></p>
+      <div class="detail-price"><% if (product.salePrice) { %><del>৳<%= formatPrice(product.price) %></del><% } %><strong>৳<%= formatPrice(initialPrice) %></strong><span><%= initialVariant?.stock > 0 ? initialVariant.stock + ' available' : 'Currently unavailable' %></span></div>
+      <form id="product-buy-form" class="product-buy-form" data-product-id="<%= product.id %>">
+        <label for="product-variant">Configuration</label><select id="product-variant" name="variantId" required><% product.variants.forEach(function(variant) { %><option value="<%= variant.id %>" data-price="<%= variant.price || product.salePrice || product.price %>" data-stock="<%= variant.stock %>" data-name="<%= variant.name %>" data-color="<%= variant.color || '' %>" data-sku="<%= variant.sku || product.sku %>" <%= initialVariant?.id === variant.id ? 'selected' : '' %> <%= variant.stock <= 0 ? 'disabled' : '' %>><%= variant.name %><%= variant.color ? ' · ' + variant.color : '' %><%= variant.price ? ' · ৳' + formatPrice(variant.price) : '' %><%= variant.stock <= 0 ? ' · Out of stock' : '' %></option><% }); %></select>
+        <div class="detail-price detail-selected-price"><strong id="selected-product-price">৳<%= formatPrice(initialPrice) %></strong><span id="selected-stock"><%= initialVariant?.stock > 0 ? initialVariant.stock + ' available' : 'Out of stock' %></span></div>
+        <div class="purchase-row"><div class="quantity-picker"><button type="button" data-product-quantity="-1" aria-label="Reduce quantity">−</button><input id="product-quantity" name="quantity" type="number" min="1" max="<%= Math.max(initialVariant?.stock || 0, 1) %>" value="1" /><button type="button" data-product-quantity="1" aria-label="Increase quantity">+</button></div><button class="button button-dark" type="submit" data-add="<%= product.id %>" <%= initialVariant?.stock <= 0 ? 'disabled' : '' %>>Add to bag <span>+</span></button></div>
+        <button class="button button-light buy-now-button" type="button" data-buy-now="<%= product.id %>">Buy now <span>→</span></button>
+      </form>
+      <div class="detail-actions"><button class="text-link" data-favorite="<%= product.id %>" aria-pressed="false">♡ Save to wishlist</button><button class="text-link" data-open-size-guide>Compare configurations <span>↗</span></button></div>
+      <a class="whatsapp-link" id="product-whatsapp-link" data-number="<%= (settings.whatsapp || '').replace(/\D/g, '') %>" href="https://wa.me/<%= (settings.whatsapp || '').replace(/\D/g, '') %>?text=<%= encodeURIComponent('Hi! I want to order ' + product.name + ' in ' + (initialVariant?.name || 'Standard') + (initialVariant?.color ? ' / ' + initialVariant.color : '') + ' (SKU: ' + (initialVariant?.sku || product.sku) + '). Is it available?') %>" target="_blank" rel="noopener noreferrer">Ask about this product on WhatsApp <span>↗</span></a>
+      <div class="detail-benefits"><p><strong>Carefully selected</strong><span>Genuine technology, chosen with care.</span></p><p><strong>Delivery across Bangladesh</strong><span>COD checkout with clear delivery fees.</span></p><p><strong>Personal support</strong><span>Talk to a real person before you decide.</span></p></div>
+    </div>
+  </section>
+  <section class="product-description section-pad"><p class="eyebrow">A CLOSER LOOK</p><h2>Technology that fits your day.</h2><p><%= product.description %>. Explore your configuration, save a favourite, or ask our team anything you’d like to know.</p></section>
+</main>
+<script id="product-data" type="application/json"><%- JSON.stringify(product).replace(/</g, '\\u003c') %></script>
+<dialog class="size-guide-dialog" id="size-guide">
+  <div class="drawer-header">
+    <div>
+      <p class="eyebrow">CONFIGURATION & MEASUREMENT GUIDE</p>
+      <h2>Find the right fit & configuration</h2>
+    </div>
+    <button class="icon-button" data-close-dialog="size-guide" aria-label="Close guide">×</button>
+  </div>
+  <div class="size-guide-content" style="display:grid;gap:24px;padding-top:18px;">
+    <div>
+      <p class="eyebrow">AVAILABLE CONFIGURATIONS FOR <%= product.name.toUpperCase() %></p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Option</th>
+              <th>Colour</th>
+              <th>Price</th>
+              <th>Available Stock</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% product.variants.forEach(function(variant) { %>
+              <tr>
+                <td><strong><%= variant.name %></strong></td>
+                <td><%= variant.color || '—' %></td>
+                <td>৳<%= formatPrice(variant.price || product.price) %></td>
+                <td><%= variant.stock > 0 ? variant.stock + ' in stock' : 'Out of stock' %></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div style="border-top:1px solid var(--line);padding-top:18px;">
+      <p class="eyebrow">STANDARD APPAREL SIZING GUIDE (INCHES)</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Standard</th>
+              <th>Numeric</th>
+              <th>Chest / Bust</th>
+              <th>Waist</th>
+              <th>Length</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>S</strong></td><td>36 – 38</td><td>36″ – 38″</td><td>30″ – 32″</td><td>38″</td></tr>
+            <tr><td><strong>M</strong></td><td>40</td><td>40″ – 41″</td><td>33″ – 34″</td><td>40″</td></tr>
+            <tr><td><strong>L</strong></td><td>42</td><td>42″ – 43″</td><td>35″ – 36″</td><td>42″</td></tr>
+            <tr><td><strong>XL</strong></td><td>44</td><td>44″ – 45″</td><td>37″ – 39″</td><td>44″</td></tr>
+            <tr><td><strong>XXL</strong></td><td>46</td><td>46″ – 47″</td><td>40″ – 42″</td><td>45″</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</dialog>
+<%- include('partials/store-footer') %><%- include('partials/store-overlays') %></body></html>

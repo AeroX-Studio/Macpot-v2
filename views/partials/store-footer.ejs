@@ -1,0 +1,23 @@
+<footer class="site-footer" id="footer">
+  <div class="page-width footer-main">
+    <div class="footer-brand-col"><a class="brand" href="/" aria-label="<%= settings?.storeName || 'MacPoint' %> home"><% if (settings?.logoUrl) { %><img class="store-logo-image" src="<%= settings.logoUrl %>" alt="<%= settings.storeName || 'MacPoint' %>" /><% } else { %><span class="brand-mark" aria-hidden="true">M<span>.</span></span><span class="brand-word"><%= (settings?.storeName || 'MacPoint').toUpperCase() %></span><% } %></a><p>Thoughtful technology.<br />Personal service.</p><span class="footer-coming-soon"><%= settings?.hotline || settings?.supportEmail || 'Here when you need us' %></span></div>
+    <div class="footer-col"><h3>Explore</h3><a href="/shop">All products</a><% activeCategories.forEach(function(category) { %><a href="/category/<%= category.slug %>"><%= category.name === 'Watch' ? 'Apple Watch' : category.name %></a><% }); %></div>
+    <div class="footer-col"><h3>Help & info</h3><a href="/shop">Delivery information</a><a href="/account">Order tracking</a><a href="/account">Warranty & support</a><a href="/admin">Store administration</a></div>
+    <div class="footer-note"><p class="eyebrow">MADE FOR YOUR NEXT</p><p>Good tools make space for good ideas. Find the ones that feel right for you.</p><a class="round-link" href="#main" aria-label="Back to top">↑</a></div>
+  </div>
+  <div class="footer-bottom page-width">
+    <div class="footer-bottom-copy">
+      <span>© <%= year %> MacPoint. All rights reserved.</span>
+    </div>
+    <div class="footer-bottom-credit">
+      <div class="aerox-tag" title="Crafted by AeroX">
+        <span class="aerox-dot" aria-hidden="true"></span>
+        <span class="aerox-label">Made by</span>
+        <strong class="aerox-brand">AeroX</strong>
+      </div>
+    </div>
+    <div class="footer-bottom-nav">
+      <a class="footer-back-to-top" href="#main">Back to top <span aria-hidden="true">↑</span></a>
+    </div>
+  </div>
+</footer>

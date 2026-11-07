@@ -1,0 +1,20 @@
+<div class="announcement-bar"><span><%= settings?.tagline || 'Thoughtful technology. Personal service.' %></span><a href="/#benefits">Discover the MacPoint difference <span aria-hidden="true">→</span></a></div>
+<header class="site-header" data-user-id="<%= currentUser?.userType === 'customer' ? currentUser.id : '' %>">
+  <div class="header-main page-width">
+    <button class="icon-button menu-toggle" id="menu-toggle" aria-label="Open navigation" aria-expanded="false" aria-controls="primary-nav"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg></button>
+    <a class="brand" href="/" aria-label="<%= settings?.storeName || 'MacPoint' %> home"><% if (settings?.logoUrl) { %><img class="store-logo-image" src="<%= settings.logoUrl %>" alt="<%= settings.storeName || 'MacPoint' %>" /><% } else { %><span class="brand-mark" aria-hidden="true">M<span>.</span></span><span class="brand-word"><%= (settings?.storeName || 'MacPoint').toUpperCase() %></span><% } %></a>
+    <form class="search-form" id="search-form" role="search" action="/shop"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8" /><path d="m16 16 4.2 4.2" /></svg><label class="sr-only" for="site-search">Search products</label><input id="site-search" name="q" type="search" placeholder="Search products" autocomplete="off" /><kbd>⌘ K</kbd></form>
+    <div class="search-suggestions" id="search-suggestions" hidden></div>
+    <div class="header-actions">
+      <a class="icon-button account-link" href="<%= currentUser ? (currentUser.userType === 'admin' ? '/admin' : '/account') : '/login' %>" aria-label="Account"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5" /><path d="M5 20c.7-3.5 3.2-5.5 7-5.5s6.3 2 7 5.5" /></svg></a>
+      <button class="icon-button wishlist-trigger" id="wishlist-trigger" aria-label="Wishlist, 0 items" aria-controls="wishlist-drawer" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.4 8.7c0 4.1-8.4 10-8.4 10s-8.4-5.9-8.4-10A4.2 4.2 0 0 1 12 6.4a4.2 4.2 0 0 1 8.4 2.3Z" /></svg><span class="count-badge" id="wishlist-count">0</span></button>
+      <button class="icon-button cart-trigger" id="cart-trigger" aria-label="Shopping bag, 0 items" aria-controls="cart-drawer" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l1 12H4L5 8Z" /><path d="M9 9V6a3 3 0 0 1 6 0v3" /></svg><span class="count-badge" id="cart-count">0</span></button>
+    </div>
+  </div>
+  <nav class="primary-nav" id="primary-nav" aria-label="Main navigation"><div class="page-width nav-inner">
+    <a href="/shop">All products</a>
+    <% activeCategories.forEach(function(category) { %><a href="/category/<%= category.slug %>"><%= category.name === 'Watch' ? 'Apple Watch' : category.name %></a><% }); %>
+    <a href="/#footer">Support</a>
+  </div></nav>
+</header>
+<% if (settings?.faviconUrl) { %><script>(function(){const href=<%- JSON.stringify(settings.faviconUrl).replace(/</g, '\\u003c') %>;const icon=document.createElement('link');icon.rel='icon';icon.href=href;document.head.append(icon);})();</script><% } %>

@@ -1,15 +1,16 @@
 <article class="product-card reveal is-visible" style="transition-delay:<%= Math.min(index * 45, 180) %>ms">
   <div class="product-image-wrap">
-    <img src="<%= product.image %>" alt="<%= product.alt %>" loading="lazy" />
+    <a href="/product/<%= product.slug || product.id %>" aria-label="View <%= product.name %>"><img src="<%= product.image %>" alt="<%= product.alt %>" loading="lazy" /></a>
     <span class="product-badge"><%= product.badge %></span>
     <button class="favorite-button" data-favorite="<%= product.id %>" aria-label="Add <%= product.name %> to wishlist" aria-pressed="false">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.4 8.7c0 4.1-8.4 10-8.4 10s-8.4-5.9-8.4-10A4.2 4.2 0 0 1 12 6.4a4.2 4.2 0 0 1 8.4 2.3Z" /></svg>
     </button>
+    <button class="quick-view-trigger" data-quick-view="<%= product.slug || product.id %>">Quick view</button>
   </div>
   <div class="product-info">
     <p class="product-category"><%= product.category %> · <%= product.description %></p>
-    <h3 class="product-name"><%= product.name %></h3>
-    <div class="product-price"><strong>৳<%= product.price.toLocaleString('en-BD') %></strong><span>Illustrative price</span></div>
-    <button class="button button-dark" data-add="<%= product.id %>">Add to bag <span aria-hidden="true">+</span></button>
+    <h3 class="product-name"><a href="/product/<%= product.slug || product.id %>"><%= product.name %></a></h3>
+    <div class="product-price"><strong><% if (product.salePrice) { %><del>৳<%= product.price.toLocaleString('en-BD') %></del> <% } %>৳<%= (product.salePrice || product.price).toLocaleString('en-BD') %></strong><span><%= product.stock > 0 ? `${product.stock} available` : 'Out of stock' %></span></div>
+    <button class="button button-dark" data-add="<%= product.id %>" data-variant-id="<%= product.variants?.[0]?.id || '' %>" <%= product.stock <= 0 ? 'disabled' : '' %>>Add to bag <span aria-hidden="true">+</span></button>
   </div>
 </article>
