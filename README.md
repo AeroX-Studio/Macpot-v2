@@ -31,6 +31,10 @@ server.js                  Express app and routes
 
 `GET /healthz` returns a small JSON health response. The home page receives catalog data from `data/products.js` and renders each product through the EJS product-card partial.
 
+## Deploying to Vercel
+
+Vercel serves the files in `public/` as static assets and runs the Express app from `server.js`. `vercel.json` includes the EJS templates and data modules in the function bundle. In Vercel, the JSON store uses `/tmp` so requests do not try to write into the read-only deployment bundle. `/tmp` is temporary and can be cleared between function instances or deployments, so it is only suitable for a demo. Use a hosted database before relying on Vercel for customer accounts, orders, inventory, or other persistent store data. Set `MACPOINT_DATA_FILE` only when you have a writable persistent filesystem available.
+
 ## Current scope
 
 The sample BDT prices are illustrative. Search, filters, wishlist, and shopping bag currently run in the browser; they do not persist to an account or database. Authentication, customer/admin dashboards, checkout, inventory, order management, payment gateways, and newsletter delivery still need backend and service integration. Never treat the sample catalog as live stock or pricing.

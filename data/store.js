@@ -1,8 +1,11 @@
 const fs = require("node:fs");
+const os = require("node:os");
 const path = require("node:path");
 const seedProducts = require("./products");
 
-const dataFile = path.join(__dirname, "store.json");
+const dataFile = process.env.MACPOINT_DATA_FILE || (process.env.VERCEL === "1"
+  ? path.join(os.tmpdir(), "macpoint-store.json")
+  : path.join(__dirname, "store.json"));
 const categoryDescriptions = {
   Mac: "Power for your ideas",
   iPhone: "A world in your pocket",
