@@ -1,8 +1,8 @@
-<div class="announcement-bar"><span><%= settings?.tagline || 'Thoughtful technology. Personal service.' %></span><a href="/#benefits">Discover the MacPoint difference <span aria-hidden="true">→</span></a></div>
+<div class="announcement-bar"><span><%= settings?.tagline || 'Thoughtful technology. Personal service.' %></span><a href="/#benefits">Discover the difference <span aria-hidden="true">→</span></a></div>
 <header class="site-header" data-user-id="<%= currentUser?.userType === 'customer' ? currentUser.id : '' %>">
   <div class="header-main page-width">
     <button class="icon-button menu-toggle" id="menu-toggle" aria-label="Open navigation" aria-expanded="false" aria-controls="primary-nav"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg></button>
-    <a class="brand" href="/" aria-label="<%= settings?.storeName || 'MacPoint' %> home"><% if (settings?.logoUrl) { %><img class="store-logo-image" src="<%= settings.logoUrl %>" alt="<%= settings.storeName || 'MacPoint' %>" /><% } else { %><span class="brand-mark" aria-hidden="true">M<span>.</span></span><span class="brand-word"><%= (settings?.storeName || 'MacPoint').toUpperCase() %></span><% } %></a>
+    <a class="brand" href="/" aria-label="<%= settings?.storeName || 'MacPoint' %> home"><% if (settings?.logoUrl) { %><img class="store-logo-image" src="<%= settings.logoUrl %>" alt="<%= settings.storeName || 'MacPoint' %>" /><% } else { %><span class="brand-mark" aria-hidden="true">M<span>.</span></span><span class="brand-word"><%= settings?.storeName || 'MacPoint' %></span><% } %></a>
     <form class="search-form" id="search-form" role="search" action="/shop"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8" /><path d="m16 16 4.2 4.2" /></svg><label class="sr-only" for="site-search">Search products</label><input id="site-search" name="q" type="search" placeholder="Search products" autocomplete="off" /><kbd>⌘ K</kbd></form>
     <div class="search-suggestions" id="search-suggestions" hidden></div>
     <div class="header-actions">
@@ -14,7 +14,7 @@
   <nav class="primary-nav" id="primary-nav" aria-label="Main navigation"><div class="page-width nav-inner">
     <a href="/shop">All products</a>
     <% activeCategories.forEach(function(category) { %><a href="/category/<%= category.slug %>"><%= category.name === 'Watch' ? 'Apple Watch' : category.name %></a><% }); %>
-    <a href="/#footer">Support</a>
+    <a href="/help">Support</a>
   </div></nav>
 </header>
 <% if (settings?.faviconUrl) { %><script>(function(){const href=<%- JSON.stringify(settings.faviconUrl).replace(/</g, '\\u003c') %>;const icon=document.createElement('link');icon.rel='icon';icon.href=href;document.head.append(icon);})();</script><% } %>

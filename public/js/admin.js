@@ -1,4 +1,19 @@
 (() => {
+  const menu = document.querySelector('#admin-mobile-menu');
+  const menuToggle = document.querySelector('#admin-menu-toggle');
+  const menuNav = document.querySelector('#admin-mobile-nav');
+  if (menu && menuToggle && menuNav && menu.showModal) {
+    document.querySelectorAll('.admin-sidebar > a').forEach(link => {
+      const item = link.cloneNode(true);
+      if (item.classList.contains('is-active')) item.setAttribute('aria-current', 'page');
+      menuNav.append(item);
+    });
+    document.documentElement.classList.add('admin-enhanced');
+    menuToggle.addEventListener('click', () => { menu.showModal(); menuToggle.setAttribute('aria-expanded', 'true'); });
+    document.querySelector('#admin-menu-close')?.addEventListener('click', () => menu.close());
+    menu.addEventListener('close', () => menuToggle.setAttribute('aria-expanded', 'false'));
+    window.matchMedia('(max-width:760px)').addEventListener('change', event => { if (!event.matches && menu.open) menu.close(); });
+  }
   document.querySelectorAll('a[href^="https://wa.me/"]').forEach((link) => {
     try {
       const url = new URL(link.href);
@@ -113,18 +128,17 @@
   const form = document.querySelector("#admin-chat-form");
   const conversationId = chat?.dataset.conversationId;
   let last = 0;
+  const seenMessages = new Set([...document.querySelectorAll('[data-message-id]')].map(element => element.dataset.messageId));
+  let socket;
   if (stream) {
     stream.querySelectorAll(".chat-message time").forEach((time) => {
       const value = Date.parse(time.dataset.createdAt || "");
       if (Number.isFinite(value)) last = Math.max(last, value);
     });
-    const initialMessages = [...stream.querySelectorAll(".chat-message")];
-    if (initialMessages.length) {
-      const lastTimeText = initialMessages.at(-1).querySelector("time")?.textContent;
-      if (lastTimeText) last = Date.now() - 1000;
-    }
   }
   function appendMessage(message) {
+    if (!stream || seenMessages.has(message.id)) return;
+    seenMessages.add(message.id);
     const article = document.createElement("article");
     article.className = "chat-message " + (message.senderType === "admin" ? "from-admin" : "from-customer");
     const sender = document.createElement("strong"); sender.textContent = message.senderType === "admin" ? "MacPoint team" : "Customer";
@@ -155,5 +169,42 @@
       appendMessage(result.message); input.value = "";
     } catch (error) { window.alert(error.message || "Message could not be sent."); }
   });
-  if (conversationId) window.setInterval(poll, 3500);
+  if (chat?.dataset.realtime === 'true' && window.io) {
+    socket = window.io({ path: '/api/socketio', reconnectionDelayMax: 10000 });
+    socket.on('connect', () => { if (conversationId) { socket.emit('conversation:join', conversationId); poll(); } });
+    socket.on('message:new', message => {
+      if (message.conversationId === conversationId) { appendMessage(message); poll(); }
+      const link = [...document.querySelectorAll('.conversation-link')].find(item => item.dataset.conversationId === message.conversationId);
+      if (link) {
+        link.querySelector('small').textContent = message.message;
+        link.parentNode.insertBefore(link, link.parentNode.querySelector('.conversation-link'));
+        if (message.senderType === 'customer' && message.conversationId !== conversationId) {
+          let badge = link.querySelector('b');
+          if (!badge) { badge = document.createElement('b'); badge.textContent = '0'; link.append(badge); }
+          badge.textContent = String(Number(badge.textContent) + 1);
+        }
+      }
+    });
+    socket.on('conversation:new', conversation => {
+      if ([...document.querySelectorAll('.conversation-link')].some(link => link.dataset.conversationId === conversation.id)) return;
+      const root = document.querySelector('.support-conversations');
+      if (!root) return;
+      root.querySelector('.admin-empty')?.remove();
+      const link = document.createElement('a'); link.className = 'conversation-link'; link.href = '/admin/chat?id=' + encodeURIComponent(conversation.id); link.dataset.conversationId = conversation.id;
+      const dot = document.createElement('span'); dot.className = 'online-indicator is-online';
+      const copy = document.createElement('span'); const name = document.createElement('strong'); name.textContent = conversation.name;
+      const preview = document.createElement('small'); preview.textContent = 'Started a conversation'; copy.append(name, preview); link.append(dot, copy); root.append(link);
+    });
+    socket.on('presence:update', event => [...document.querySelectorAll('.conversation-link')].find(link => link.dataset.conversationId === event.conversationId)?.querySelector('.online-indicator')?.classList.toggle('is-online', event.online));
+    let typingTimeout;
+    socket.on('typing:start', event => {
+      if (event.conversationId !== conversationId || event.senderType !== 'customer') return;
+      const indicator = document.querySelector('#admin-chat-typing');
+      if (indicator) { indicator.hidden = false; clearTimeout(typingTimeout); typingTimeout = setTimeout(() => { indicator.hidden = true; }, 3000); }
+    });
+    socket.on('typing:stop', () => { const indicator = document.querySelector('#admin-chat-typing'); if (indicator) indicator.hidden = true; });
+    form?.elements.message?.addEventListener('input', () => socket.emit('typing:start'));
+    form?.addEventListener('submit', () => socket.emit('typing:stop'));
+  }
+  if (conversationId) window.setInterval(() => { if (!document.hidden && !socket?.connected) poll(); }, 3500);
 })();

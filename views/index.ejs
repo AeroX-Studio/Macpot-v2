@@ -1,183 +1,65 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#ffffff" />
-    <meta name="description" content="<%= settings?.seoDescription || 'Discover Apple devices and everyday essentials at MacPoint Bangladesh.' %>" />
-    <title><%= title %></title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="/css/styles.css?v=2.2.0" />
-    <link rel="stylesheet" href="/css/commerce.css?v=2.2.0" />
-    <script src="/js/app.js?v=2.2.0" defer></script>
-    <script src="/js/storefront.js?v=2.2.0" defer></script>
-  </head>
-  <body>
-    <a class="skip-link" href="#main">Skip to content</a>
-
-    <%- include('partials/store-header') %>
-
-    <main id="main">
-      <% const initialBanner = (banners && banners.length ? banners[0] : null) || {
-        eyebrow: "MADE FOR WHAT’S NEXT",
-        title: "A little more<br />wonder in every day.",
-        description: "Meet the devices that make your big ideas, daily rituals, and everything in between feel effortless.",
-        note: "MacBook Air · Built for the long run",
-        image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=1400&q=88",
-        alt: "A slim silver laptop on a bright desk"
-      }; %>
-      <section class="hero page-width" id="top" aria-label="Featured collection">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#f7f7f2" />
+  <meta name="description" content="<%= settings.seoDescription %>" /><title><%= title %></title><link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/styles.css?v=3" /><link rel="stylesheet" href="/css/commerce.css?v=3" /><link rel="stylesheet" href="/css/premium.css?v=3" /><link rel="stylesheet" href="/css/mobile.css?v=4" />
+  <script src="/js/app.js?v=3" defer></script><script src="/js/storefront.js?v=3" defer></script>
+</head>
+<body class="home-page">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <%- include('partials/store-header') %>
+  <main id="main">
+    <% const initialBanner = banners[0] || defaultBanners[0]; %>
+    <section class="hero-shell" id="top" aria-label="Featured collections" aria-roledescription="carousel">
+      <div class="hero page-width">
         <div class="hero-copy">
-          <p class="eyebrow" id="hero-eyebrow"><%= initialBanner.eyebrow %></p>
-          <h1 id="hero-title"><%- initialBanner.title.replace(/\n/g, '<br />') %></h1>
+          <p class="eyebrow hero-kicker"><span class="status-dot" aria-hidden="true"></span><span id="hero-eyebrow"><%= initialBanner.eyebrow %></span></p>
+          <h1 id="hero-title"><% initialBanner.title.split(/<br\s*\/?>|\n/).forEach(function(line, index) { %><% if(index) { %><br /><% } %><span><%= line %></span><% }); %></h1>
           <p class="hero-description" id="hero-description"><%= initialBanner.description %></p>
-          <div class="hero-actions">
-            <a class="button button-dark" href="#products" id="hero-cta">Explore the collection <span aria-hidden="true">→</span></a>
-            <a class="text-link" href="#categories">Find your device <span aria-hidden="true">↗</span></a>
-          </div>
-          <div class="slider-controls" aria-label="Featured slides">
-            <button class="slider-arrow" id="hero-prev" aria-label="Previous slide"><span aria-hidden="true">←</span></button>
-            <div class="slider-dots" id="slider-dots"></div>
-            <button class="slider-arrow" id="hero-next" aria-label="Next slide"><span aria-hidden="true">→</span></button>
-            <span class="slide-number" id="slide-number">01 / <%= String((banners && banners.length) || 3).padStart(2, '0') %></span>
-          </div>
+          <div class="hero-actions"><a class="button button-dark" href="<%= initialBanner.href || '/shop' %>" id="hero-cta"><span id="hero-cta-label"><%= initialBanner.cta || 'Explore the collection' %></span><span aria-hidden="true">↗</span></a><a class="text-link" href="#categories">Find your everyday <span aria-hidden="true">→</span></a></div>
+          <div class="hero-assurance"><span class="assurance-symbol" aria-hidden="true">✓</span><span>Personal advice. A better way to buy.</span></div>
         </div>
         <div class="hero-visual" id="hero-visual">
-          <div class="hero-art-wrap">
-            <img id="hero-image" src="<%= initialBanner.image %>" alt="<%= initialBanner.alt || 'MacPoint featured product' %>" />
-          </div>
-          <div class="hero-product-note"><span class="note-line"></span><span id="hero-note"><%= initialBanner.note %></span></div>
-          <div class="hero-index" aria-hidden="true">01</div>
+          <span class="hero-orbit" aria-hidden="true"></span><span class="hero-orbit orbit-two" aria-hidden="true"></span>
+          <span class="hero-watermark" aria-hidden="true">air.</span>
+          <div class="hero-art-wrap"><img id="hero-image" src="<%= initialBanner.image %>" alt="<%= initialBanner.alt %>" fetchpriority="high" width="980" height="470" /></div>
+          <div class="hero-product-note"><span class="note-plus" aria-hidden="true">+</span><span id="hero-note"><%= initialBanner.note %></span></div>
+          <span class="hero-edition">THE MACPOINT EDIT / 01</span>
         </div>
-      </section>
-
-      <section class="category-section section-pad page-width" id="categories">
-        <div class="section-heading reveal">
-          <div><p class="eyebrow">A WORLD OF POSSIBILITY</p><h2>What are you looking for?</h2></div>
-          <a class="text-link" href="/shop">View all products <span aria-hidden="true">→</span></a>
-        </div>
-        <div class="category-grid">
-          <% categories.forEach(function(category) { %>
-            <a class="category-card reveal" href="/category/<%= category.slug %>">
-              <span class="category-image">
-                <img src="<%= category.image || products.find(function(product) { return product.category === category.name; })?.image || '' %>" alt="<%= category.name %>" loading="lazy" />
-              </span>
-              <span class="category-title"><%= category.name === 'Watch' ? 'Apple Watch' : category.name %></span>
-              <span class="category-subtitle"><%= category.description %></span>
-              <span class="category-arrow" aria-hidden="true">↗</span>
-            </a>
-          <% }); %>
-        </div>
-      </section>
-
-      <section class="benefits-band" id="benefits">
-        <div class="page-width benefits-grid">
-          <div class="benefit reveal"><span class="benefit-icon" aria-hidden="true">01</span><div><h3>Advice that listens</h3><p>Real people, thoughtful recommendations.</p></div></div>
-          <div class="benefit reveal"><span class="benefit-icon" aria-hidden="true">02</span><div><h3>Easy ways to pay</h3><p>Flexible options, clear from the start.</p></div></div>
-          <div class="benefit reveal"><span class="benefit-icon" aria-hidden="true">03</span><div><h3>Here when you need us</h3><p>Care and support, before and after.</p></div></div>
-          <div class="benefit reveal"><span class="benefit-icon" aria-hidden="true">04</span><div><h3>Delivered with care</h3><p>Careful packing, right to your door.</p></div></div>
-        </div>
-      </section>
-
-      <section class="products-section section-pad page-width" id="products">
-        <div class="section-heading reveal">
-          <div>
-            <p class="eyebrow">THE ONES YOU LOVE</p>
-            <h2>Customer favourites</h2>
-            <p class="section-description">Thoughtfully chosen tech to help you do more of what you love.</p>
-          </div>
-          <div class="product-filters" id="product-filters" aria-label="Filter products">
-            <button class="filter-chip is-active" data-filter="All" aria-pressed="true">All</button>
-            <% const uniqueCategories = [...new Set(products.map(function(p) { return p.category; }).filter(Boolean))]; %>
-            <% uniqueCategories.forEach(function(category) { %>
-              <button class="filter-chip" data-filter="<%= category %>" aria-pressed="false"><%= category %></button>
-            <% }); %>
-          </div>
-        </div>
-        <div class="product-grid" id="product-grid" aria-live="polite">
-          <% products.forEach(function(product, index) { %>
-            <%- include('partials/product-card', { product: product, index: index }) %>
-          <% }); %>
-        </div>
-        <script id="catalog-data" type="application/json"><%- JSON.stringify(products).replace(/</g, '\\u003c') %></script>
-        <script id="banner-data" type="application/json"><%- JSON.stringify(banners).replace(/</g, '\\u003c') %></script>
-        <p class="empty-results" id="empty-results" hidden>No products match that search. Try another name or category.</p>
-      </section>
-
-      <% if (newArrivals && newArrivals.length) { %>
-      <section class="products-section section-pad page-width merch-section">
-        <div class="section-heading">
-          <div><p class="eyebrow">JUST ARRIVED</p><h2>New to the collection</h2></div>
-          <a class="text-link" href="/shop?sort=newest">Explore all arrivals <span aria-hidden="true">→</span></a>
-        </div>
-        <div class="product-grid">
-          <% newArrivals.forEach(function(product, index) { %>
-            <%- include('partials/product-card', { product: product, index: index }) %>
-          <% }); %>
-        </div>
-      </section>
-      <% } %>
-
-      <% if (bestSellers && bestSellers.length) { %>
-      <section class="products-section section-pad page-width merch-section">
-        <div class="section-heading">
-          <div><p class="eyebrow">A LITTLE MORE LOVED</p><h2>MacPoint favourites</h2></div>
-          <a class="text-link" href="/shop?sort=best_seller">Shop best sellers <span aria-hidden="true">→</span></a>
-        </div>
-        <div class="product-grid">
-          <% bestSellers.forEach(function(product, index) { %>
-            <%- include('partials/product-card', { product: product, index: index }) %>
-          <% }); %>
-        </div>
-      </section>
-      <% } %>
-
-      <section class="feature-banner page-width reveal">
-        <div class="feature-copy">
-          <p class="eyebrow">MEET YOUR NEXT BIG IDEA</p>
-          <h2>Light on you.<br />Big on possibility.</h2>
-          <p>Everything you need to take your day somewhere new, wrapped in a remarkably light design.</p>
-          <a class="button button-light" href="/shop?category=Mac">Discover MacBook <span aria-hidden="true">→</span></a>
-        </div>
-        <div class="feature-image">
-          <img src="https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=1300&q=88" alt="Open laptop ready for a new idea" loading="lazy" />
-        </div>
-        <span class="feature-serial" aria-hidden="true">MP — 001</span>
-      </section>
-
-      <section class="editorial-section section-pad page-width">
-        <div class="editorial-mark reveal" aria-hidden="true">M.</div>
-        <div class="editorial-copy reveal">
-          <p class="eyebrow">THE MACPOINT WAY</p>
-          <h2>Good technology should feel like it belongs to you.</h2>
-          <p>We’re here to make choosing your next device feel clear, considered, and a little more personal. From first question to your next great idea, we’ll help you find the right fit.</p>
-          <a class="text-link" href="/#footer">Get to know us <span aria-hidden="true">→</span></a>
-        </div>
-        <div class="editorial-image reveal">
-          <img src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1000&q=85" alt="A calm, bright workspace" loading="lazy" />
-        </div>
-      </section>
-
-      <section class="newsletter-section">
-        <div class="newsletter-inner page-width reveal">
-          <div>
-            <p class="eyebrow">A NOTE FROM MACPOINT</p>
-            <h2>Good things, occasionally.</h2>
-            <p>New arrivals, useful ideas, and the occasional reason to smile. No noise.</p>
-          </div>
-          <form class="newsletter-form" id="newsletter-form">
-            <label class="sr-only" for="newsletter-email">Email address</label>
-            <input id="newsletter-email" type="email" placeholder="Your email address" required />
-            <button class="button button-dark" type="submit">Sign me up <span aria-hidden="true">→</span></button>
-            <p class="form-message" id="newsletter-message" role="status"></p>
-          </form>
-        </div>
-      </section>
-    </main>
-
-    <%- include('partials/store-footer') %>
-    <%- include('partials/store-overlays') %>
-  </body>
-</html>
+        <div class="hero-bottom"><span class="hero-bottom-label">GOOD TECHNOLOGY. GREAT POSSIBILITIES.</span><div class="slider-controls"><span class="slide-number" id="slide-number">01 / <%= String(banners.length || 3).padStart(2, '0') %></span><div class="slider-dots" id="slider-dots"></div><button class="slider-arrow" id="hero-prev" aria-label="Previous collection">←</button><button class="slider-arrow" id="hero-next" aria-label="Next collection">→</button></div><a class="scroll-cue" href="#categories">Discover more <span aria-hidden="true">↓</span></a></div>
+      </div>
+    </section>
+    <section class="service-strip" aria-label="Shopping with MacPoint"><div class="page-width service-inner">
+      <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6l8-3Z"/><path d="m8 12 3 3 5-6"/></svg>Thoughtfully selected</span>
+      <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h12v12H3zM15 10h4l3 4v4h-7"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>Delivery across Bangladesh</span>
+      <span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18M7 15h4"/></svg>Cash on delivery</span>
+      <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13v-1a8 8 0 0 1 16 0v1M4 12h3v7H4zM17 12h3v7h-3zM17 19c0 2-3 2-5 2"/></svg>Real people. Real support.</span>
+    </div></section>
+    <section class="category-section section-pad page-width" id="categories">
+      <div class="section-heading reveal"><div><p class="eyebrow">FIND YOUR EVERYDAY</p><h2>A world of <span class="muted-heading">possibility.</span></h2></div><a class="text-link" href="/shop">Explore everything <span aria-hidden="true">↗</span></a></div>
+      <div class="category-grid"><% categories.forEach(function(category, index) { %><a class="category-card reveal" href="/category/<%= category.slug %>"><span class="category-number">0<%= index + 1 %></span><span class="category-image"><img src="<%= category.image || products.find(p => p.category === category.name)?.image %>" alt="" loading="lazy" width="240" height="200" /></span><span class="category-title"><%= category.name === 'Watch' ? 'Apple Watch' : category.name %><span aria-hidden="true">↗</span></span><span class="category-subtitle"><%= category.description %></span></a><% }); %></div>
+    </section>
+    <section class="products-section section-pad page-width" id="products">
+      <div class="section-heading reveal"><div><p class="eyebrow">CURATED, NOT COMPLICATED</p><h2>Great picks. <span class="muted-heading">Every day.</span></h2><p class="section-description">The devices you love. The little details that make them yours.</p></div><a class="text-link" href="/shop">Shop the collection <span aria-hidden="true">↗</span></a></div>
+      <div class="collection-toolbar"><div class="product-filters" id="product-filters" aria-label="Filter products"><button class="filter-chip is-active" data-filter="All" aria-pressed="true">All essentials</button><% [...new Set(products.map(p => p.category))].forEach(function(category) { %><button class="filter-chip" data-filter="<%= category %>" aria-pressed="false"><%= category %></button><% }); %></div><div class="collection-sort"><span id="collection-count"><%= products.length %> essentials</span><label class="sr-only" for="merchandising-select">Collection</label><select id="merchandising-select"><option value="all">All essentials</option><option value="featured">Featured picks</option><option value="newArrival">New arrivals</option><option value="bestSeller">Best sellers</option></select></div></div>
+      <div class="product-grid" id="product-grid" aria-live="polite"><% products.forEach(function(product, index) { %><%- include('partials/product-card', { product, index }) %><% }); %></div>
+      <p class="empty-results" id="empty-results" hidden>No products here yet. Explore another collection.</p>
+      <script id="catalog-data" type="application/json"><%- JSON.stringify(products).replace(/</g, '\\u003c') %></script><script id="banner-data" type="application/json"><%- JSON.stringify(banners.length ? banners : defaultBanners).replace(/</g, '\\u003c') %></script>
+    </section>
+    <section class="edit-grid page-width" aria-label="The everyday edit">
+      <a class="edit-card edit-work reveal" href="/category/mac"><div><p class="eyebrow">THE WORK / LIFE EDIT</p><h2>Big ideas.<br />Meet your match.</h2><p>Make something you’re proud of.</p><span class="text-link">Find your Mac <span aria-hidden="true">↗</span></span></div><img src="/images/hero-macbook.png" alt="MacBook Air laptops" loading="lazy" width="980" height="470" /><span class="edit-watermark" aria-hidden="true">Create.</span></a>
+      <a class="edit-card edit-audio reveal" href="/category/audio"><div><p class="eyebrow">YOUR DAILY SOUNDTRACK</p><h2>A little quiet.<br />A lot to love.</h2><p>Find a sound that feels like you.</p><span class="text-link">Explore audio <span aria-hidden="true">↗</span></span></div><img src="/images/airpods-pro.jpg" alt="AirPods Pro and charging case" loading="lazy" width="600" height="500" /></a>
+    </section>
+    <section class="difference-section section-pad page-width" id="benefits"><div class="section-heading reveal"><div><p class="eyebrow">THE MACPOINT DIFFERENCE</p><h2>Great tech.<br /><span class="muted-heading">An even better experience.</span></h2></div><p class="difference-intro">Because choosing your next device should feel as good as using it.</p></div><div class="difference-grid">
+      <article class="difference-card reveal"><span class="difference-index">01 /</span><svg viewBox="0 0 32 32" aria-hidden="true"><path d="m16 3 11 4v9c0 7-11 13-11 13S5 23 5 16V7l11-4Z"/><path d="m11 15 4 4 7-8"/></svg><h3>Chosen with care.</h3><p>A considered collection of devices and essentials. Just the things we’d choose for ourselves.</p></article>
+      <article class="difference-card reveal"><span class="difference-index">02 /</span><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 7h22v15H15l-7 6v-6H5V7Z"/><path d="M10 12h12M10 17h7"/></svg><h3>People, not scripts.</h3><p>A quick question or a big decision? Talk to someone who will help you find your fit.</p><button class="text-link" data-open-support>Let’s talk <span aria-hidden="true">↗</span></button></article>
+      <article class="difference-card reveal"><span class="difference-index">03 /</span><svg viewBox="0 0 32 32" aria-hidden="true"><path d="m16 3 12 6v15l-12 6L4 24V9l12-6ZM4 9l12 6 12-6M16 15v15M10 6l12 6v7"/></svg><h3>From us to you.</h3><p>Careful packing, delivery across Bangladesh, and cash on delivery. Clear from the start.</p><a class="text-link" href="/help">The finer details <span aria-hidden="true">↗</span></a></article>
+    </div></section>
+    <section class="newsletter-section"><div class="newsletter-inner page-width reveal"><div><p class="eyebrow">STAY IN THE KNOW</p><h2>A little ahead.<br />Always in the loop.</h2><p>Fresh arrivals, thoughtful finds, and the occasional good thing.</p></div><form class="newsletter-form" id="newsletter-form"><label class="sr-only" for="newsletter-email">Email address</label><input id="newsletter-email" type="email" placeholder="Your email address" autocomplete="email" required /><button class="button button-dark" type="submit">Count me in <span aria-hidden="true">↗</span></button><p class="form-message" id="newsletter-message" role="status"></p><span class="newsletter-note">Thoughtful finds. No noise.</span></form></div></section>
+  </main>
+  <%- include('partials/store-footer') %><%- include('partials/store-overlays') %>
+</body></html>

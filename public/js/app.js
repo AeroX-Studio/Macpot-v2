@@ -50,7 +50,9 @@
     const itemCount = count();
     const badge = document.querySelector("#cart-count");
     const trigger = document.querySelector("#cart-trigger");
-    if (badge) badge.textContent = String(itemCount);
+    if (badge) { badge.textContent = String(itemCount); badge.hidden = itemCount === 0; }
+    document.querySelectorAll('[data-mobile-cart-count]').forEach(badge => { badge.textContent = String(itemCount); badge.hidden = itemCount === 0; });
+    document.querySelector('[data-open-bag]')?.setAttribute('aria-label', 'Open shopping bag, ' + itemCount + ' items');
     if (trigger) trigger.setAttribute("aria-label", "Shopping bag, " + itemCount + " items");
     const drawerCount = document.querySelector("#drawer-item-count");
     if (drawerCount) drawerCount.textContent = "(" + itemCount + ")";
@@ -78,7 +80,7 @@
     if (stock < 1) { notify("That configuration is currently out of stock."); return false; }
     const key = product.id + "-" + variant.id + "-" + (variant.color || "");
     const existing = cart.find((item) => item.key === key);
-    const addQuantity = Math.max(1, Number(quantity) || 1);
+    const addQuantity = Math.max(1, Math.floor(Number(quantity) || 1));
     if ((existing?.quantity || 0) + addQuantity > stock) { notify("Only " + stock + " of that configuration are available."); return false; }
     const line = {
       key, productId: product.id, slug: product.slug || product.id, variantId: variant.id,
@@ -98,12 +100,14 @@
     if (dialog && !dialog.open && dialog.showModal) dialog.showModal();
     if (id === "cart-drawer") document.querySelector("#cart-trigger")?.setAttribute("aria-expanded", "true");
     if (id === "wishlist-drawer") document.querySelector("#wishlist-trigger")?.setAttribute("aria-expanded", "true");
+    if (id === 'mobile-menu') document.querySelector('#menu-toggle')?.setAttribute('aria-expanded', 'true');
   }
   function closeDialog(id) {
     const dialog = document.getElementById(id);
     if (dialog?.open) dialog.close();
     if (id === "cart-drawer") document.querySelector("#cart-trigger")?.setAttribute("aria-expanded", "false");
     if (id === "wishlist-drawer") document.querySelector("#wishlist-trigger")?.setAttribute("aria-expanded", "false");
+    if (id === 'mobile-menu') document.querySelector('#menu-toggle')?.setAttribute('aria-expanded', 'false');
   }
   async function renderWishlist() {
     const root = document.querySelector("#wishlist-items");
@@ -122,7 +126,9 @@
     store.set(WISH, [...wishlist]);
     const badge = document.querySelector("#wishlist-count");
     const trigger = document.querySelector("#wishlist-trigger");
-    if (badge) badge.textContent = String(wishlist.size);
+    if (badge) { badge.textContent = String(wishlist.size); badge.hidden = wishlist.size === 0; }
+    document.querySelectorAll('[data-mobile-wishlist-count]').forEach(badge => { badge.textContent = String(wishlist.size); badge.hidden = wishlist.size === 0; });
+    document.querySelector('[data-open-wishlist]')?.setAttribute('aria-label', 'Open saved items, ' + wishlist.size + ' items');
     if (trigger) trigger.setAttribute("aria-label", "Wishlist, " + wishlist.size + " items");
     document.querySelectorAll("[data-favorite]").forEach((button) => {
       const active = wishlist.has(button.dataset.favorite);
@@ -187,6 +193,12 @@
   }
 
   document.addEventListener("click", async (event) => {
+    if (event.target.closest('[data-open-bag]')) openDialog('cart-drawer');
+    if (event.target.closest('[data-open-wishlist]')) openDialog('wishlist-drawer');
+    if (event.target.closest('[data-open-support]')) {
+      if (document.querySelector('#chat-panel')?.hidden) document.querySelector('#chat-launcher')?.click();
+      document.querySelector('#chat-panel input:not([hidden])')?.focus();
+    }
     const add = event.target.closest("[data-add]");
     const quickAdd = event.target.closest("[data-quick-add]");
     const buyNow = event.target.closest("[data-buy-now]");
@@ -256,7 +268,10 @@
   document.querySelector("#close-cart")?.addEventListener("click", () => closeDialog("cart-drawer"));
   document.querySelector("#wishlist-trigger")?.addEventListener("click", () => openDialog("wishlist-drawer"));
   document.querySelector("#account-trigger")?.addEventListener("click", (event) => { window.location.href = event.currentTarget.dataset.href || "/account"; });
-  document.querySelectorAll(".cart-drawer, .quick-view-dialog, .size-guide-dialog").forEach((dialog) => dialog.addEventListener("cancel", (event) => { event.preventDefault(); closeDialog(dialog.id); }));
+  document.querySelectorAll(".cart-drawer, .quick-view-dialog, .size-guide-dialog, .mobile-menu").forEach((dialog) => {
+    dialog.addEventListener('cancel', (event) => { event.preventDefault(); closeDialog(dialog.id); });
+    dialog.addEventListener('close', () => closeDialog(dialog.id));
+  });
   document.querySelector("#cart-coupon-form")?.addEventListener("submit", (event) => { event.preventDefault(); applyCoupon(event.currentTarget.elements.code.value, "cart-coupon-message"); });
   const variantSelect = document.querySelector("#product-variant");
   document.querySelector("#product-buy-form")?.addEventListener("submit", (event) => {
@@ -294,6 +309,7 @@
       try {
         const response = await fetch("/api/products/search?q=" + encodeURIComponent(query));
         const result = await response.json();
+        if (searchInput.value.trim() !== query) return;
         suggestions.innerHTML = result.products.map((product) => '<a class="search-suggestion" href="/product/' + encodeURIComponent(product.slug) + '"><img src="' + esc(product.image) + '" alt="" /><span><strong>' + esc(product.name) + '</strong><small>' + esc(product.category) + '</small></span><strong>' + (product.salePrice ? '<del>' + money(product.price) + '</del> ' : '') + money(product.salePrice || product.price) + '</strong></a>').join("") || '<p class="search-no-results">No products found. Press Enter to search all products.</p>';
         suggestions.hidden = false;
       } catch (_error) { suggestions.hidden = true; }
@@ -302,12 +318,26 @@
   document.addEventListener("click", (event) => { if (!event.target.closest(".search-form") && !event.target.closest("#search-suggestions") && suggestions) suggestions.hidden = true; });
   document.addEventListener("keydown", (event) => { if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") { event.preventDefault(); searchInput?.focus(); } });
   document.querySelector("#menu-toggle")?.addEventListener("click", (event) => {
+    if (window.matchMedia('(max-width:760px)').matches) { openDialog('mobile-menu'); return; }
     const nav = document.querySelector("#primary-nav");
     if (!nav) return;
     const isOpen = nav.classList.toggle("is-open");
     event.currentTarget.setAttribute("aria-expanded", String(isOpen));
     event.currentTarget.setAttribute("aria-label", isOpen ? "Close navigation" : "Open navigation");
   });
+  const mobileLayout = window.matchMedia('(max-width:760px)');
+  const syncMobileLayout = () => {
+    document.querySelector('#menu-toggle')?.setAttribute('aria-controls', mobileLayout.matches ? 'mobile-menu' : 'primary-nav');
+    document.querySelectorAll('.shop-filter-panel').forEach(panel => { panel.open = !mobileLayout.matches; });
+    if (!mobileLayout.matches) closeDialog('mobile-menu');
+    document.querySelector('#primary-nav')?.classList.remove('is-open');
+    document.querySelector('#menu-toggle')?.setAttribute('aria-expanded', 'false');
+    document.querySelector('#menu-toggle')?.setAttribute('aria-label', 'Open navigation');
+  };
+  syncMobileLayout();
+  mobileLayout.addEventListener('change', syncMobileLayout);
+  const activeMobileRoute = location.pathname === '/' ? 'home' : /^\/(shop|category|product)(\/|$)/.test(location.pathname) ? 'shop' : /^\/(account|login|register)(\/|$)/.test(location.pathname) ? 'account' : '';
+  document.querySelector('[data-mobile-route="' + activeMobileRoute + '"]')?.setAttribute('aria-current', 'page');
   document.querySelector("#newsletter-form")?.addEventListener("submit", async (event) => {
     event.preventDefault();
     const form = event.currentTarget;
@@ -329,11 +359,15 @@
   let unread = 0;
   const chatPanel = document.querySelector("#chat-panel");
   const chatStream = document.querySelector("#chat-stream");
+  const seenMessages = new Set();
+  let chatSocket;
   if (chatPanel) {
     chatPanel.hidden = true;
     chatPanel.style.setProperty("display", "none", "important");
   }
   function addChatMessage(message) {
+    if (seenMessages.has(message.id)) return;
+    seenMessages.add(message.id);
     const article = document.createElement("article");
     article.className = "chat-message " + (message.senderType === "admin" ? "from-admin" : "from-customer");
     const sender = document.createElement("strong"); sender.textContent = message.senderType === "admin" ? "MacPoint team" : (chatState.name || "You");
@@ -362,6 +396,7 @@
     if (compose) compose.hidden = false;
     if (chatStream) chatStream.hidden = false;
     pollChat();
+    connectChat();
   }
   async function startChat(name, phone) {
     const errorNode = document.querySelector("#chat-start-error");
@@ -403,7 +438,35 @@
       addChatMessage(result.message); input.value = "";
     } catch (error) { notify(error.message || "Message could not be sent."); }
   });
-  if (chatState.conversationId) window.setInterval(pollChat, 5000);
+  function connectChat() {
+    if (!chatState.conversationId || !window.io || !document.querySelector('[data-realtime="true"]')) return;
+    if (chatSocket) { if (chatSocket.connected) chatSocket.emit('conversation:join', chatState.conversationId); return; }
+    chatSocket = window.io({ path: '/api/socketio', auth: { visitorKey }, reconnectionDelayMax: 10000 });
+    chatSocket.on('connect', () => { chatSocket.emit('conversation:join', chatState.conversationId); pollChat(); });
+    chatSocket.on('message:new', message => { if (message.conversationId === chatState.conversationId) { addChatMessage(message); if (!chatPanel?.hidden) pollChat(); } });
+    let typingTimeout;
+    chatSocket.on('typing:start', event => {
+      if (event.senderType !== 'admin') return;
+      const indicator = document.querySelector('#chat-typing');
+      if (indicator) { indicator.hidden = false; clearTimeout(typingTimeout); typingTimeout = setTimeout(() => { indicator.hidden = true; }, 3000); }
+    });
+    chatSocket.on('typing:stop', () => { const indicator = document.querySelector('#chat-typing'); if (indicator) indicator.hidden = true; });
+  }
+  document.querySelector('#chat-message')?.addEventListener('input', () => chatSocket?.emit('typing:start'));
+  document.querySelector('#chat-compose')?.addEventListener('submit', () => chatSocket?.emit('typing:stop'));
+  document.addEventListener('DOMContentLoaded', connectChat);
+  window.setInterval(() => { if (chatState.conversationId && !document.hidden && !chatSocket?.connected) pollChat(); }, 5000);
+
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  if ('IntersectionObserver' in window && !reducedMotion.matches) {
+    document.documentElement.classList.add('has-reveal');
+    const observer = new IntersectionObserver(entries => entries.forEach(entry => {
+      if (entry.isIntersecting) { entry.target.classList.add('is-visible'); observer.unobserve(entry.target); }
+    }), { threshold: 0.05 });
+    document.querySelectorAll('.reveal:not(.is-visible)').forEach(element => observer.observe(element));
+  }
+  document.querySelectorAll('.nav-inner a').forEach(link => { if (new URL(link.href).pathname === location.pathname) link.setAttribute('aria-current', 'page'); });
+  document.addEventListener('keydown', event => { if (event.key === 'Escape' && suggestions) suggestions.hidden = true; });
 
   window.MacPointStore = {
     getCart: () => cart.map((item) => ({ ...item })),

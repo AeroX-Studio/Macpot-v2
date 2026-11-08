@@ -41,7 +41,7 @@
     </button>
   </div>
   <div class="wishlist-items" id="wishlist-items"></div>
-  <p class="empty-results" id="wishlist-empty">Your saved items will be right here.</p>
+  <p class="empty-results" id="wishlist-empty">Your saved items will be right here. <a class="text-link" href="/shop">Explore the collection →</a></p>
 </dialog>
 
 <dialog class="quick-view-dialog" id="quick-view" aria-label="Product quick view">
@@ -53,38 +53,12 @@
 <dialog class="size-guide-dialog" id="size-guide" aria-label="Measurement and configuration guide">
   <div class="drawer-header">
     <div>
-      <p class="eyebrow">MEASUREMENT & SPECIFICATION GUIDE</p>
-      <h2>Find the right fit & configuration</h2>
+      <p class="eyebrow">THE RIGHT DEVICE FOR YOUR DAY</p>
+      <h2>Find your configuration</h2>
     </div>
     <button class="icon-button" data-close-dialog="size-guide" aria-label="Close guide">×</button>
   </div>
   <div class="size-guide-content" style="display:grid;gap:24px;padding-top:18px;">
-    <div>
-      <p class="eyebrow">APPAREL & SIZING CHART (INCHES)</p>
-      <p style="margin-bottom:12px;color:var(--ink-soft);font-size:11px;">Standard garment measurements across sizes. Measure around the fullest part of your chest and waist.</p>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Standard Size</th>
-              <th>Numeric Size</th>
-              <th>Chest / Bust</th>
-              <th>Waist</th>
-              <th>Hips</th>
-              <th>Length</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td><strong>S</strong></td><td>36 – 38</td><td>36″ – 38″</td><td>30″ – 32″</td><td>38″ – 40″</td><td>38″</td></tr>
-            <tr><td><strong>M</strong></td><td>40</td><td>40″ – 41″</td><td>33″ – 34″</td><td>41″ – 42″</td><td>40″</td></tr>
-            <tr><td><strong>L</strong></td><td>42</td><td>42″ – 43″</td><td>35″ – 36″</td><td>43″ – 44″</td><td>42″</td></tr>
-            <tr><td><strong>XL</strong></td><td>44</td><td>44″ – 45″</td><td>37″ – 39″</td><td>45″ – 47″</td><td>44″</td></tr>
-            <tr><td><strong>XXL</strong></td><td>46</td><td>46″ – 47″</td><td>40″ – 42″</td><td>48″ – 50″</td><td>45″</td></tr>
-            <tr><td><strong>3XL</strong></td><td>48</td><td>48″ – 50″</td><td>43″ – 45″</td><td>51″ – 53″</td><td>46″</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
     <div style="border-top:1px solid var(--line);padding-top:18px;">
       <p class="eyebrow">HARDWARE & DEVICE CONFIGURATIONS</p>
       <p style="margin-bottom:12px;color:var(--ink-soft);font-size:11px;">Guidance for picking your device storage, display size, and performance.</p>
@@ -120,9 +94,9 @@
   </a>
 </aside>
 
-<section class="chat-widget" id="chat-widget" aria-label="MacPoint support chat" style="position:fixed;z-index:9998;right:max(24px, env(safe-area-inset-right));bottom:max(24px, env(safe-area-inset-bottom));">
+<section class="chat-widget" id="chat-widget" data-realtime="<%= realtimeEnabled %>" aria-label="MacPoint support chat" >
   <button class="chat-launcher" id="chat-launcher" aria-label="Open support chat" aria-expanded="false">
-    <span aria-hidden="true">M.</span>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v12H10l-6 4V4Z"/><path d="M8 8h8M8 12h5"/></svg>
     <span class="chat-unread" id="chat-unread" hidden></span>
   </button>
   <div class="chat-panel" id="chat-panel" style="display:none !important;" hidden>
@@ -142,7 +116,7 @@
         <p class="form-message" id="chat-start-error" role="status"></p>
       </form>
     </div>
-    <div class="chat-stream" id="chat-stream" hidden aria-live="polite"></div>
+    <div class="chat-stream" id="chat-stream" hidden aria-live="polite"></div><p id="chat-typing" class="chat-typing" hidden aria-live="polite">MacPoint is typing…</p>
     <form class="chat-compose" id="chat-compose" hidden>
       <label class="sr-only" for="chat-message">Your message</label>
       <input id="chat-message" name="message" maxlength="2000" placeholder="Write a message…" required />
@@ -151,4 +125,6 @@
   </div>
 </section>
 
+<% if (realtimeEnabled) { %><script src="/js/socket.io.js" defer></script><% } %>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<%- include('mobile-navigation') %>

@@ -1,0 +1,13 @@
+<dialog id="mobile-menu" class="mobile-menu" aria-labelledby="mobile-menu-title">
+  <div class="mobile-menu-head"><a class="brand" href="/"><span class="brand-mark">M</span><span class="brand-word">MacPoint</span></a><button class="icon-button" data-close-dialog="mobile-menu" aria-label="Close navigation"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+  <div class="mobile-menu-intro"><p class="eyebrow">YOUR EVERYDAY, UPGRADED</p><h2 id="mobile-menu-title">Find your next.</h2></div>
+  <nav class="mobile-menu-links" aria-label="Mobile categories"><a href="/shop"><span>Shop everything</span><span aria-hidden="true">↗</span></a><% activeCategories.forEach(function(category, index) { %><a href="/category/<%= category.slug %>" style="--item-index:<%= index + 1 %>"><span><%= category.name === 'Watch' ? 'Apple Watch' : category.name %></span><span aria-hidden="true">↗</span></a><% }); %></nav>
+  <div class="mobile-menu-foot"><a href="/help">Help & delivery <span>→</span></a><a href="<%= currentUser?.userType === 'admin' ? '/admin' : '/account' %>">Your account <span>→</span></a><a href="/admin/login">Store administration <span>↗</span></a><p>Thoughtful technology. Personal service.</p></div>
+</dialog>
+<nav class="mobile-tabbar" aria-label="Mobile shopping navigation">
+  <a href="/" data-mobile-route="home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7M5 9v12h5v-7h4v7h5V9"/></svg><span>Home</span></a>
+  <a href="/shop" data-mobile-route="shop"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Explore</span></a>
+  <button type="button" data-open-wishlist aria-label="Open saved items" aria-controls="wishlist-drawer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.4 8.7c0 4.1-8.4 10-8.4 10s-8.4-5.9-8.4-10A4.2 4.2 0 0 1 12 6.4a4.2 4.2 0 0 1 8.4 2.3Z"/></svg><span>Saved</span><b data-mobile-wishlist-count hidden>0</b></button>
+  <button type="button" data-open-bag aria-label="Open shopping bag" aria-controls="cart-drawer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l1 12H4L5 8ZM9 9V6a3 3 0 0 1 6 0v3"/></svg><span>Bag</span><b data-mobile-cart-count hidden>0</b></button>
+  <a href="<%= currentUser?.userType === 'admin' ? '/admin' : '/account' %>" data-mobile-route="account"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 21v-1a7 7 0 0 1 14 0v1"/></svg><span>Account</span></a>
+</nav>

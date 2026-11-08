@@ -11,6 +11,6 @@
     <p class="product-category"><%= product.category %> · <%= product.description %></p>
     <h3 class="product-name"><a href="/product/<%= product.slug || product.id %>"><%= product.name %></a></h3>
     <div class="product-price"><strong><% if (product.salePrice) { %><del>৳<%= product.price.toLocaleString('en-BD') %></del> <% } %>৳<%= (product.salePrice || product.price).toLocaleString('en-BD') %></strong><span><%= product.stock > 0 ? `${product.stock} available` : 'Out of stock' %></span></div>
-    <button class="button button-dark" data-add="<%= product.id %>" data-variant-id="<%= product.variants?.[0]?.id || '' %>" <%= product.stock <= 0 ? 'disabled' : '' %>>Add to bag <span aria-hidden="true">+</span></button>
+    <button class="button button-dark" data-add="<%= product.id %>" data-variant-id="<%= product.variants?.find(variant => variant.stock > 0)?.id || '' %>" <%= product.stock <= 0 ? 'disabled' : '' %>>Add to bag <span aria-hidden="true">+</span></button>
   </div>
 </article>

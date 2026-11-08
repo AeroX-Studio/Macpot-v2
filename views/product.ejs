@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><meta name="theme-color" content="#fff" /><title><%= title %></title><link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" /><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" /><link rel="stylesheet" href="/css/styles.css?v=2.2.0" /><link rel="stylesheet" href="/css/commerce.css?v=2.2.0" /><script src="/js/app.js?v=2.2.0" defer></script></head>
+<head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><meta name="theme-color" content="#fff" /><title><%= title %></title><link rel="icon" href="/favicon.svg" type="image/svg+xml" /><link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" /><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" /><link rel="stylesheet" href="/css/styles.css?v=2.2.0" /><link rel="stylesheet" href="/css/commerce.css?v=2.2.0" /><link rel="stylesheet" href="/css/premium.css?v=3" /><link rel="stylesheet" href="/css/mobile.css?v=4" /><script src="/js/app.js?v=4" defer></script></head>
 <body><a class="skip-link" href="#main">Skip to content</a><%- include('partials/store-header') %>
 <main id="main" class="page-width commerce-page">
   <% const initialVariant = product.variants.find(function(variant) { return variant.stock > 0; }) || product.variants[0]; const initialPrice = initialVariant?.price || product.salePrice || product.price; %>
@@ -26,8 +26,8 @@
 <dialog class="size-guide-dialog" id="size-guide">
   <div class="drawer-header">
     <div>
-      <p class="eyebrow">CONFIGURATION & MEASUREMENT GUIDE</p>
-      <h2>Find the right fit & configuration</h2>
+      <p class="eyebrow">FIND THE RIGHT CONFIGURATION</p>
+      <h2>Compare your options</h2>
     </div>
     <button class="icon-button" data-close-dialog="size-guide" aria-label="Close guide">×</button>
   </div>
@@ -57,29 +57,7 @@
         </table>
       </div>
     </div>
-    <div style="border-top:1px solid var(--line);padding-top:18px;">
-      <p class="eyebrow">STANDARD APPAREL SIZING GUIDE (INCHES)</p>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Standard</th>
-              <th>Numeric</th>
-              <th>Chest / Bust</th>
-              <th>Waist</th>
-              <th>Length</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td><strong>S</strong></td><td>36 – 38</td><td>36″ – 38″</td><td>30″ – 32″</td><td>38″</td></tr>
-            <tr><td><strong>M</strong></td><td>40</td><td>40″ – 41″</td><td>33″ – 34″</td><td>40″</td></tr>
-            <tr><td><strong>L</strong></td><td>42</td><td>42″ – 43″</td><td>35″ – 36″</td><td>42″</td></tr>
-            <tr><td><strong>XL</strong></td><td>44</td><td>44″ – 45″</td><td>37″ – 39″</td><td>44″</td></tr>
-            <tr><td><strong>XXL</strong></td><td>46</td><td>46″ – 47″</td><td>40″ – 42″</td><td>45″</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+
   </div>
 </dialog>
 <%- include('partials/store-footer') %><%- include('partials/store-overlays') %></body></html>

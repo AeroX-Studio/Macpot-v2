@@ -2,10 +2,13 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const seedProducts = require("./products");
+const presentation = require("./presentation");
 
-const dataFile = process.env.MACPOINT_DATA_FILE || (process.env.VERCEL === "1"
+const legacyDataFile = process.env.MACPOINT_DATA_FILE || (process.env.VERCEL === "1"
   ? path.join(os.tmpdir(), "macpoint-store.json")
   : path.join(__dirname, "store.json"));
+const dataFile = process.env.MACPOINT_DATABASE_FILE || legacyDataFile.replace(/\.json$/i, '') + '.sqlite';
+const database = require('./database')(dataFile);
 const categoryDescriptions = {
   Mac: "Power for your ideas",
   iPhone: "A world in your pocket",
@@ -66,17 +69,20 @@ function initialData() {
     ],
   }));
   return {
-    schemaVersion: 3,
+    schemaVersion: 4,
     sessionSecret: require("node:crypto").randomBytes(48).toString("hex"),
     users: [],
     roles: ["Super Admin", "Manager", "Order Manager", "Product Manager", "Customer Support", "Inventory Manager"],
-    categories,
-    products,
-    banners: [
-      { id: "banner-one", eyebrow: "MADE FOR WHAT’S NEXT", title: "A little more\nwonder in every day.", description: "Meet the devices that make your big ideas, daily rituals, and everything in between feel effortless.", note: "MacBook Air · Built for the long run", image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=1400&q=88", alt: "A slim silver laptop on a bright desk", active: true, sortOrder: 0 },
-      { id: "banner-two", eyebrow: "A NEW WAY TO SEE IT", title: "Your world,\na little closer.", description: "A brilliant camera, thoughtful design, and all the things you love—right where you need them.", note: "iPhone · Made to move with you", image: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=1400&q=88", alt: "A smartphone photographed on a clean surface", active: true, sortOrder: 1 },
-      { id: "banner-three", eyebrow: "SOUND THAT STAYS WITH YOU", title: "Find your own\nkind of quiet.", description: "Settle into every note with personal audio made for your commute, your focus, and your off-switch.", note: "Audio · Your space, anywhere", image: "https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?auto=format&fit=crop&w=1400&q=88", alt: "Wireless earbuds in a charging case", active: true, sortOrder: 2 },
-    ],
+    categories: categories.map(category => ({ ...category, image: presentation.images[seedProducts.find(p => p.category === category.name)?.id] || category.image })),
+    products: products.map(product => {
+      const image = presentation.images[product.id];
+      if (image) { product.image = image; product.images[0].url = image; }
+      if (['Audio', 'Accessories', 'Watch'].includes(product.category)) {
+        product.variants = [{ ...product.variants[0], name: product.category === 'Watch' ? 'Standard case' : 'Standard', stock: product.stock }];
+      } else product.stock = product.variants.reduce((sum, variant) => sum + variant.stock, 0);
+      return product;
+    }),
+    banners: presentation.banners,
     orders: [],
     invoices: [],
     wishlists: [],
@@ -93,14 +99,10 @@ function initialData() {
 }
 
 function read() {
-  if (!fs.existsSync(dataFile)) {
-    const data = initialData();
-    fs.writeFileSync(dataFile, JSON.stringify(data, null, 2), "utf8");
-    return data;
-  }
   try {
-    const data = JSON.parse(fs.readFileSync(dataFile, "utf8"));
-    let changed = false;
+    let data = database.read();
+    let changed = !data;
+    if (!data) data = fs.existsSync(legacyDataFile) ? JSON.parse(fs.readFileSync(legacyDataFile, 'utf8')) : initialData();
     if (!Array.isArray(data.wishlists)) { data.wishlists = []; changed = true; }
     if (!Array.isArray(data.banners)) { data.banners = initialData().banners; changed = true; }
     if (!Array.isArray(data.inventoryLogs)) { data.inventoryLogs = []; changed = true; }
@@ -111,7 +113,7 @@ function read() {
     if (!data.settings) { data.settings = { ...settingsDefaults }; changed = true; }
     if (data.settings) {
       for (const [key, value] of Object.entries(settingsDefaults)) {
-        if (data.settings[key] === undefined || (!data.settings[key] && value)) {
+        if (data.settings[key] === undefined) {
           data.settings[key] = value;
           changed = true;
         }
@@ -133,6 +135,24 @@ function read() {
       data.schemaVersion = 3;
       changed = true;
     }
+    if (Number(data.schemaVersion || 1) < 4) {
+      data.products.forEach(product => {
+        const seed = seedProducts.find(item => item.id === product.id);
+        const image = presentation.images[product.id];
+        if (seed && image && product.image === seed.image) {
+          product.image = image;
+          product.images.forEach(item => { if (item.url === seed.image) item.url = image; });
+          data.categories.forEach(category => { if (category.image === seed.image) category.image = image; });
+        }
+      });
+      const originalTitles = ['A little more\nwonder in every day.', 'Your world,\na little closer.', 'Find your own\nkind of quiet.'];
+      data.banners = data.banners.map(banner => {
+        const index = originalTitles.indexOf(banner.title);
+        return index >= 0 && banner.id === presentation.banners[index].id ? { ...presentation.banners[index], active: banner.active, sortOrder: banner.sortOrder } : banner;
+      });
+      data.schemaVersion = 4;
+      changed = true;
+    }
     if (changed) write(data);
     return data;
   } catch (error) {
@@ -141,10 +161,7 @@ function read() {
   }
 }
 
-function write(data) {
-  fs.writeFileSync(dataFile, JSON.stringify(data, null, 2), "utf8");
-  return data;
-}
+function write(data) { return database.write(data); }
 
 function update(mutator) {
   const data = read();
@@ -153,4 +170,4 @@ function update(mutator) {
   return result;
 }
 
-module.exports = { read, write, update, dataFile };
+module.exports = { read, write, update, dataFile, close: database.close };

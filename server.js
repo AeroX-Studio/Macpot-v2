@@ -5,6 +5,7 @@ const { promisify } = require("node:util");
 const store = require("./data/store");
 
 const app = express();
+const httpServer = require("node:http").createServer(app);
 const port = Number.parseInt(process.env.PORT || "3000", 10);
 const publicDirectory = path.join(__dirname, "public");
 const scrypt = promisify(crypto.scrypt);
@@ -15,14 +16,10 @@ const fulfillmentLabels = {
   shipped: "With courier", out_for_delivery: "Out for delivery", delivered: "Delivered",
   cancelled: "Cancelled", returned: "Returned", refunded: "Refunded",
 };
-const rolePermissions = {
-  "Super Admin": ["*"],
-  Manager: ["dashboard", "orders", "products", "categories", "inventory", "customers", "coupons", "chat", "settings", "banners"],
-  "Order Manager": ["dashboard", "orders", "customers"],
-  "Product Manager": ["dashboard", "products", "categories"],
-  "Customer Support": ["dashboard", "orders", "customers", "chat"],
-  "Inventory Manager": ["dashboard", "products", "inventory"],
-};
+const rolePermissions = require("./data/roles");
+const realtime = process.env.VERCEL === "1" ? null : require("./lib/realtime")(httpServer, hasPermission);
+app.httpServer = httpServer;
+app.realtime = realtime;
 
 app.disable("x-powered-by");
 app.set("view engine", "ejs");
@@ -41,6 +38,7 @@ const staticOptions = {
 app.use("/css", express.static(path.join(publicDirectory, "css"), staticOptions));
 app.use("/js", express.static(path.join(publicDirectory, "js"), staticOptions));
 app.use(express.static(publicDirectory, staticOptions));
+app.get("/js/socket.io.js", (_request, response) => response.sendFile(path.join(path.dirname(require.resolve("socket.io-client/package.json")), "dist/socket.io.min.js")));
 
 const money = (amount) => Number(amount || 0).toLocaleString("en-BD");
 const slugify = (value) => String(value || "").toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -146,6 +144,7 @@ app.use((request, response, next) => {
     response.locals.statusLabel = (status) => fulfillmentLabels[status] || status;
     response.locals.canAdmin = (permission) => hasPermission(request.state.user, permission);
     response.locals.cartCount = 0;
+    response.locals.realtimeEnabled = Boolean(realtime);
     response.locals.activeCategories = data.categories.filter((category) => category.active && category.showInHeader).sort((a, b) => a.sortOrder - b.sortOrder);
     next();
   } catch (error) {
@@ -173,7 +172,7 @@ function requireCustomer(request, response, next) {
 
 function requireAdmin(request, response, next) {
   if (!request.state.data.users.some((user) => user.userType === "admin")) return response.redirect("/admin/setup");
-  if (request.state.user?.userType !== "admin") return response.redirect(`/login?next=${encodeURIComponent(request.originalUrl)}`);
+  if (request.state.user?.userType !== "admin") return response.redirect(`/admin/login?next=${encodeURIComponent(request.originalUrl)}`);
   next();
 }
 
@@ -215,8 +214,9 @@ function calculateDelivery(data, subtotal, zone) {
 }
 
 function getFilteredProducts(data, query) {
+  const requestedCategory = getCategory(data, query.category)?.name || query.category;
   let items = activeProducts(data).filter((product) => {
-    if (query.category && product.category.toLowerCase() !== String(query.category).toLowerCase() && product.slug !== query.category) return false;
+    if (requestedCategory && product.category.toLowerCase() !== String(requestedCategory).toLowerCase()) return false;
     const term = String(query.q || "").trim().toLowerCase();
     if (term && !`${product.name} ${product.description} ${product.sku} ${(product.tags || []).join(" ")} ${product.category}`.toLowerCase().includes(term)) return false;
     if (query.size && !product.variants?.some((variant) => variant.active && variant.name.toLowerCase() === String(query.size).toLowerCase())) return false;
@@ -243,6 +243,7 @@ app.get("/healthz", (_request, response) => response.json({ status: "ok" }));
 app.get("/", (request, response) => {
   const { data } = request.state;
   response.render("index", {
+    defaultBanners: require("./data/presentation").banners,
     title: data.settings.seoTitle || "MacPoint — Apple, thoughtfully chosen",
     year: new Date().getFullYear(),
     products: activeProducts(data).map(publicProduct),
@@ -253,6 +254,8 @@ app.get("/", (request, response) => {
     settings: data.settings,
   });
 });
+
+app.get("/help", (_request, response) => response.render("help", { title: "Delivery & support — MacPoint" }));
 
 app.get("/shop", (request, response) => {
   const { data } = request.state;
@@ -427,7 +430,21 @@ app.post("/order-success/:orderNumber/claim-account", async (request, response, 
   } catch (error) { next(error); }
 });
 
-app.get("/login", (request, response) => response.render("login", { title: "Sign in — MacPoint", next: request.query.next || "/account", message: "", setupAvailable: !request.state.data.users.some((user) => user.userType === "admin") }));
+function safeLoginDestination(value, user) {
+  const fallback = user.userType === 'admin' ? '/admin' : '/account';
+  const candidate = String(value || '');
+  if (!candidate.startsWith('/') || candidate.startsWith('//') || /[\\\r\n]/.test(candidate)) return fallback;
+  if (user.userType === 'admin' && /^\/account(?:\/|\?|$)/.test(candidate)) return '/admin';
+  if (user.userType !== 'admin' && /^\/admin(?:\/|\?|$)/.test(candidate)) return '/account';
+  if (/^\/(?:admin\/)?login(?:\?|$)/.test(candidate)) return fallback;
+  return candidate;
+}
+
+app.get(['/login', '/admin/login'], (request, response) => {
+  const adminMode = request.path === '/admin/login' || /^\/admin(?:\/|$)/.test(String(request.query.next || ''));
+  if (request.state.user && (!adminMode || request.state.user.userType === 'admin')) return response.redirect(safeLoginDestination(request.query.next, request.state.user));
+  response.render('login', { title: adminMode ? 'Admin sign in — MacPoint' : 'Sign in — MacPoint', adminMode, identity: '', next: request.query.next || '', message: '', setupAvailable: !requestHasAdmin(request) });
+});
 
 app.get("/order-success/:orderNumber/invoice", (request, response) => {
   const data = request.state.data;
@@ -440,17 +457,18 @@ app.get("/order-success/:orderNumber/invoice", (request, response) => {
   response.render("invoice", { title: invoice.invoiceNumber + " — MacPoint", invoice, snapshot: invoice.data });
 });
 
-app.post("/login", async (request, response, next) => {
+app.post(["/login", "/admin/login"], async (request, response, next) => {
   try {
+    const adminMode = request.path === '/admin/login' || /^\/admin(?:\/|$)/.test(String(request.body.next || ''));
     const identity = String(request.body.identity || "").trim().toLowerCase();
-    const user = request.state.data.users.find((entry) => (entry.email || "").toLowerCase() === identity || entry.phone === validPhone(identity));
-    if (!user || user.status === "inactive" || !(await passwordMatches(request.body.password, user.passwordHash))) {
-      return response.status(401).render("login", { title: "Sign in — MacPoint", next: request.body.next || "/account", message: "Those details did not match an active account.", setupAvailable: !request.state.data.users.some((entry) => entry.userType === "admin") });
+    const phone = validPhone(identity);
+    const user = identity && request.state.data.users.find((entry) => (entry.email || "").toLowerCase() === identity || (phone && entry.phone === phone));
+    if (!user || user.status === "inactive" || (adminMode && user.userType !== 'admin') || !(await passwordMatches(request.body.password, user.passwordHash))) {
+      return response.status(401).render("login", { title: adminMode ? 'Admin sign in — MacPoint' : 'Sign in — MacPoint', adminMode, identity, next: request.body.next || '', message: adminMode ? 'The email or password does not match an active administrator. Please try again.' : 'Those details did not match an active account.', setupAvailable: !requestHasAdmin(request) });
     }
     const session = createSession(user.id);
     setSessionCookie(response, session.id, session.secret);
-    const nextPath = String(request.body.next || "/account");
-    response.redirect(nextPath.startsWith("/") && !nextPath.startsWith("//") ? nextPath : (user.userType === "admin" ? "/admin" : "/account"));
+    response.redirect(safeLoginDestination(request.body.next, user));
   } catch (error) { next(error); }
 });
 
@@ -474,6 +492,7 @@ app.post("/register", async (request, response, next) => {
 });
 
 app.post("/logout", (request, response) => {
+  if (request.state.user) realtime?.logout(request.state.user.id);
   if (request.state.session) store.update((data) => { data.sessions = data.sessions.filter((session) => session.id !== request.state.session.id); });
   clearSessionCookie(response);
   response.redirect("/");
@@ -584,6 +603,7 @@ app.post("/api/chat/conversations", (request, response) => {
     conversation = { id: makeId("conversation"), visitorKey, userId: request.state.user?.id || null, name, phone, status: "open", lastMessage: "", unreadAdmin: 0, unreadCustomer: 0, createdAt: new Date().toISOString(), lastMessageAt: new Date().toISOString(), customerOnlineAt: new Date().toISOString() };
     data.conversations.push(conversation);
     store.write(data);
+    realtime?.conversation(conversation);
   }
   response.json({ conversation: { id: conversation.id, name: conversation.name, phone: conversation.phone, status: conversation.status } });
 });
@@ -608,11 +628,12 @@ app.post("/api/chat/messages", (request, response) => {
   const message = { id: makeId("message"), conversationId: conversation.id, senderId: request.state.user?.id || null, senderType: "customer", message: body, isRead: false, createdAt: new Date().toISOString() };
   data.messages.push(message); conversation.lastMessage = body; conversation.lastMessageAt = message.createdAt; conversation.customerOnlineAt = message.createdAt; conversation.unreadAdmin += 1;
   store.write(data);
+  realtime?.publish(message);
   response.status(201).json({ message });
 });
 
 app.get("/admin/setup", (_request, response) => {
-  if (requestHasAdmin(_request)) return response.redirect("/login?next=%2Fadmin");
+  if (requestHasAdmin(_request)) return response.redirect("/admin/login");
   response.render("admin-setup", { title: "Set up MacPoint admin — MacPoint", message: "" });
 });
 
@@ -624,9 +645,14 @@ app.post("/admin/setup", async (request, response, next) => {
     const name = String(request.body.name || "").trim().slice(0, 120);
     const email = String(request.body.email || "").trim().toLowerCase();
     const password = String(request.body.password || "");
+    if (request.body.confirmPassword !== undefined && password !== String(request.body.confirmPassword)) return response.status(400).render('admin-setup', { title: 'Set up MacPoint admin — MacPoint', message: 'The passwords do not match. Please enter them again.' });
     if (!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || password.length < 12) return response.status(400).render("admin-setup", { title: "Set up MacPoint admin — MacPoint", message: "Enter a name, valid email, and password with at least 12 characters." });
     const user = { id: makeId("admin"), name, email, phone: "", passwordHash: await passwordHash(password), userType: "admin", role: "Super Admin", status: "active", createdAt: new Date().toISOString() };
-    store.update((data) => data.users.push(user));
+    store.update((data) => {
+      if (data.users.some(entry => entry.userType === 'admin')) { const error = new Error('An administrator account already exists. Sign in to continue.'); error.status = 409; throw error; }
+      if (data.users.some(entry => entry.email?.toLowerCase() === email)) { const error = new Error('That email already belongs to an account. Use another administrator email.'); error.status = 409; throw error; }
+      data.users.push(user);
+    });
     const session = createSession(user.id); setSessionCookie(response, session.id, session.secret);
     response.redirect("/admin");
   } catch (error) { next(error); }
@@ -706,9 +732,19 @@ app.post("/admin/orders/:id/status", requireAdmin, requirePermission("orders"), 
   const nextStatus = request.body.orderStatus;
   const paymentStatus = request.body.paymentStatus;
   if (!order || !fulfillmentStatuses.includes(nextStatus) || !paymentStatuses.includes(paymentStatus)) { setFlash(response, "error", "Choose a valid order and payment status."); return response.redirect(`/admin/orders/${request.params.id}`); }
+  const progress = fulfillmentStatuses.slice(0, 7);
+  const fromStep = progress.indexOf(order.orderStatus);
+  const toStep = progress.indexOf(nextStatus);
+  const permitted = order.orderStatus === nextStatus
+    || (fromStep >= 0 && toStep > fromStep)
+    || (nextStatus === 'cancelled' && fromStep >= 0 && fromStep < 4)
+    || (nextStatus === 'returned' && fromStep >= 4)
+    || (nextStatus === 'refunded' && order.orderStatus === 'returned')
+    || (order.orderStatus === 'cancelled' && toStep >= 0 && toStep < 4);
+  if (!permitted) { setFlash(response, 'error', 'That status change is not available. Dispatched orders must be returned before a refund.'); return response.redirect(`/admin/orders/${order.id}`); }
   if (["shipped", "out_for_delivery", "delivered"].includes(order.orderStatus) && nextStatus === "cancelled") { setFlash(response, "error", "Orders with a courier cannot be cancelled. Mark the parcel returned after it comes back."); return response.redirect(`/admin/orders/${order.id}`); }
   if (order.orderStatus !== nextStatus) {
-    if (nextStatus === "cancelled" && order.stockReserved) {
+    if (["cancelled", "returned"].includes(nextStatus) && order.stockReserved) {
       for (const item of order.items) {
         const product = data.products.find((entry) => entry.id === item.productId);
         const variant = product?.variants.find((entry) => entry.id === item.variantId);
@@ -731,6 +767,9 @@ app.post("/admin/orders/:id/status", requireAdmin, requirePermission("orders"), 
     }
     order.timeline.push({ status: nextStatus, note: String(request.body.note || "").trim().slice(0, 1000) || `Order status changed to ${fulfillmentLabels[nextStatus]}.`, adminId: request.state.user.id, createdAt: new Date().toISOString() });
     order.orderStatus = nextStatus;
+  }
+  if (order.paymentStatus !== paymentStatus || (request.body.note && order.orderStatus === nextStatus && order.timeline.at(-1)?.note !== String(request.body.note).trim())) {
+    order.timeline.push({ status: nextStatus, note: String(request.body.note || '').trim().slice(0, 1000) || `Payment status updated to ${paymentStatus.replaceAll('_', ' ')}.`, adminId: request.state.user.id, createdAt: new Date().toISOString() });
   }
   order.paymentStatus = paymentStatus;
   store.write(data);
@@ -901,7 +940,7 @@ app.post("/api/admin/chat/messages", requireAdmin, requirePermission("chat"), (r
   if (!conversation || !messageText) return response.status(400).json({ error: "Write a message to continue." });
   const message = { id: makeId("message"), conversationId: conversation.id, senderId: request.state.user.id, senderType: "admin", message: messageText, isRead: false, createdAt: new Date().toISOString() };
   data.messages.push(message); conversation.lastMessage = messageText; conversation.lastMessageAt = message.createdAt; conversation.unreadCustomer += 1;
-  store.write(data); response.status(201).json({ message });
+  store.write(data); realtime?.publish(message); response.status(201).json({ message });
 });
 
 app.post("/api/admin/upload", requireAdmin, requirePermission("products"), (request, response) => {
@@ -914,9 +953,10 @@ app.use((_request, response) => response.status(404).render("404", { title: "Pag
 app.use((error, _request, response, _next) => {
   console.error(error);
   if (response.headersSent) return;
-  response.status(500).render("error", { title: "Something went wrong — MacPoint", message: process.env.NODE_ENV === "production" ? "Please try again in a moment." : error.message, year: response.locals.year });
+  if (_request.path.startsWith('/api/')) return response.status(error.status || 500).json({ error: error.status === 409 ? error.message : 'This request could not be completed. Please try again.' });
+  response.status(error.status || 500).render("error", { title: "Something went wrong — MacPoint", message: error.status === 409 || process.env.NODE_ENV !== "production" ? error.message : "Please try again in a moment.", year: response.locals.year });
 });
 
-if (require.main === module) app.listen(port, () => console.log(`MacPoint is listening on http://localhost:${port}`));
+if (require.main === module) httpServer.listen(port, () => console.log(`MacPoint is listening on http://localhost:${port}`));
 
 module.exports = app;

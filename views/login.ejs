@@ -1,2 +1,31 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title><%= title %></title><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" /><link rel="stylesheet" href="/css/styles.css?v=2.2.0" /><link rel="stylesheet" href="/css/commerce.css?v=2.2.0" /></head>
-<body class="auth-body"><main class="auth-layout"><a class="brand" href="/"><span class="brand-mark">M<span>.</span></span><span class="brand-word">MACPOINT</span></a><section class="auth-card"><p class="eyebrow">WELCOME BACK</p><h1>Sign in to your account.</h1><p>Follow orders and keep your details close.</p><% if (message) { %><p class="form-message form-error" role="alert"><%= message %></p><% } %><form method="post" action="/login"><input type="hidden" name="next" value="<%= next %>" /><label>Email or mobile number<input name="identity" autocomplete="username" required /></label><label>Password<input type="password" name="password" autocomplete="current-password" required /></label><button class="button button-dark" type="submit">Sign in <span>→</span></button></form><p>New to MacPoint? <a href="/register">Create an account</a></p><% if (setupAvailable) { %><p class="setup-note">First time setting up this store? <a href="/admin/setup">Create the store administrator</a></p><% } %></section></main></body></html>
+<!doctype html><html lang="en"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" /><title><%= title %></title><link rel="icon" href="/favicon.svg" /><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" /><link rel="stylesheet" href="/css/styles.css?v=4" /><link rel="stylesheet" href="/css/commerce.css?v=4" /><link rel="stylesheet" href="/css/premium.css?v=4" /><link rel="stylesheet" href="/css/mobile.css?v=4" /><script src="/js/auth.js?v=4" defer></script></head>
+<body class="auth-body auth-redesign <%= adminMode ? 'admin-auth' : 'customer-auth' %>">
+  <a class="skip-link" href="#sign-in">Skip to sign in</a>
+  <main class="auth-shell">
+    <% if (adminMode) { %><%- include('partials/auth-brand') %><% } %>
+    <div class="auth-form-side">
+      <div class="auth-page-top"><a class="brand" href="/" aria-label="MacPoint home"><span class="brand-mark" aria-hidden="true">M</span><span class="brand-word">MacPoint</span></a><a class="auth-back" href="/">Back to store <span aria-hidden="true">↗</span></a></div>
+      <section class="auth-card" id="sign-in" aria-labelledby="auth-title">
+        <div class="auth-emblem" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></svg></div>
+        <p class="eyebrow"><%= adminMode ? 'STORE ADMINISTRATION' : 'YOUR MACPOINT ACCOUNT' %></p>
+        <h1 id="auth-title">Welcome back.</h1>
+        <p class="auth-description"><%= adminMode ? 'Sign in to manage your store. A little clarity for everything ahead.' : 'Your favourites, your orders, and the details that make it yours.' %></p>
+        <% if (message) { %><div class="auth-error" role="alert"><span aria-hidden="true">!</span><p><%= message %></p></div><% } %>
+        <form method="post" action="<%= adminMode ? '/admin/login' : '/login' %>" data-auth-form="login">
+          <input type="hidden" name="next" value="<%= next %>" />
+          <label for="login-identity"><%= adminMode ? 'Administrator email' : 'Email or mobile number' %></label>
+          <input id="login-identity" name="identity" type="<%= adminMode ? 'email' : 'text' %>" inputmode="<%= adminMode ? 'email' : 'text' %>" value="<%= identity %>" placeholder="<%= adminMode ? 'you@yourstore.com' : 'Your email or mobile number' %>" autocomplete="username" autocapitalize="none" spellcheck="false" required />
+          <label for="login-password">Password</label>
+          <div class="password-field"><input id="login-password" type="password" name="password" placeholder="Enter your password" autocomplete="current-password" required /><button type="button" data-toggle-password="login-password" aria-label="Show password" aria-pressed="false">Show</button></div>
+          <button class="button button-dark auth-submit" type="submit" data-label="<%= adminMode ? 'Sign in to your store' : 'Sign in' %>"><span data-submit-label><%= adminMode ? 'Sign in to your store' : 'Sign in' %></span><span aria-hidden="true">→</span></button>
+        </form>
+        <% if (adminMode) { %>
+          <p class="auth-note">Use the email and password from your administrator account. Access follows your assigned store role.</p>
+          <% if (setupAvailable) { %><div class="auth-setup-callout"><strong>First time here?</strong><p>Create your store’s first administrator to get started.</p><a class="text-link" href="/admin/setup">Set up your store <span>→</span></a></div><% } %>
+          <a class="auth-alternate" href="/login">Shopping with us? Customer sign in <span aria-hidden="true">↗</span></a>
+        <% } else { %><p class="auth-alternate">New to MacPoint? <a href="/register">Create an account <span aria-hidden="true">↗</span></a></p><a class="auth-admin-link" href="/admin/login">Store administrator? Sign in here</a><% } %>
+      </section>
+      <p class="auth-page-foot">© <%= year %> MacPoint <span>Thoughtfully connected.</span></p>
+    </div>
+  </main>
+</body></html>

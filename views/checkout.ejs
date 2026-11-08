@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title><%= title %></title><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" /><link rel="stylesheet" href="/css/styles.css?v=2.2.0" /><link rel="stylesheet" href="/css/commerce.css?v=2.2.0" /><script src="/js/app.js?v=2.2.0" defer></script><script src="/js/checkout.js?v=2.2.0" defer></script></head>
+<head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title><%= title %></title><link rel="icon" href="/favicon.svg" type="image/svg+xml" /><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" /><link rel="stylesheet" href="/css/styles.css?v=2.2.0" /><link rel="stylesheet" href="/css/commerce.css?v=2.2.0" /><link rel="stylesheet" href="/css/premium.css?v=3" /><link rel="stylesheet" href="/css/mobile.css?v=4" /><script src="/js/app.js?v=4" defer></script><script src="/js/checkout.js?v=2.2.0" defer></script></head>
 <body data-delivery-dhaka="<%= settings.deliveryDhaka %>" data-delivery-outside-dhaka="<%= settings.deliveryOutsideDhaka %>" data-free-delivery-threshold="<%= settings.freeDeliveryThreshold %>"><a class="skip-link" href="#main">Skip to content</a><%- include('partials/store-header') %>
 <main id="main" class="page-width commerce-page checkout-page">
   <div class="breadcrumb"><a href="/">Home</a><span>/</span><a href="/shop">Shop</a><span>/</span><span>Checkout</span></div>
@@ -22,7 +22,7 @@
     <aside class="checkout-summary"><p class="eyebrow">YOUR ORDER</p><h2>In your bag</h2><div id="checkout-items" class="checkout-items"></div>
       <div class="coupon-form" id="checkout-coupon-form"><label for="checkout-coupon">Discount code</label><div><input id="checkout-coupon" name="code" autocomplete="off" /><button class="button button-light" id="checkout-coupon-apply" type="button">Apply</button></div><p class="form-message" id="checkout-coupon-message" role="status"></p></div>
       <div class="summary-lines"><p><span>Subtotal</span><strong id="checkout-subtotal">৳0</strong></p><p><span>Discount</span><strong id="checkout-discount">− ৳0</strong></p><p><span>Delivery</span><strong id="checkout-delivery">৳0</strong></p><p class="summary-total"><span>Total</span><strong id="checkout-total">৳0</strong></p></div>
-      <p class="checkout-security">Your order is priced again against the live catalog before it is placed.</p><button class="button button-dark place-order-button" type="submit">Place COD order <span>→</span></button><p class="form-message" id="checkout-error" role="alert"></p><a class="text-link" href="/shop">← Continue shopping</a>
+      <p class="checkout-security">Pay when your order arrives. We’ll call to confirm the details.</p><button class="button button-dark place-order-button" type="submit">Place COD order <span>→</span></button><p class="form-message" id="checkout-error" role="alert"></p><a class="text-link" href="/shop">← Continue shopping</a>
     </aside>
   </form>
 </main><%- include('partials/store-footer') %><%- include('partials/store-overlays') %></body></html>
